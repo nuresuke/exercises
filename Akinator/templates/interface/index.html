@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -12,7 +13,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: url('./images/akihaikei.png') no-repeat center center fixed;
+            background: url("{% static 'interface/images/akihaikei.png' %}") no-repeat center center fixed;
             background-size: cover;
             font-family: Arial, sans-serif;
         }
@@ -51,10 +52,10 @@
 <body>
     <div class="container">
         <!-- Pokémon ロゴ -->
-        <img src="./images/pokemon-logo.png" alt="Pokémon Logo" class="pokemon-logo">
-        
+        <img src="{% static 'interface/images/pokemon-logo.png' %}" alt="Pokémon Logo" class="pokemon-logo">
+
         <!-- Akinator ロゴ -->
-        <img src="./images/aki.png" alt="Akinator Logo" class="akinator-logo">
+        <img src="{% static 'interface/images/aki.png' %}" alt="Akinator Logo" class="akinator-logo">
         
         <!-- スタートボタン -->
         <button class="start-button">START</button>
