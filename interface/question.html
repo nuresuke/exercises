@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>質問画面</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('./images/草.png') no-repeat center center fixed; /* 背景画像設定 */
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            width: 90%;
+            max-width: 900px; /* コンテナの最大幅 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .edit-button {
+            position: fixed; /* 修正ボタンを左上に固定 */
+            top: 10px;
+            left: 10px;
+            padding: 15px 30px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            z-index: 10;
+        }
+        .edit-button:hover {
+            background-color: #0056b3;
+        }
+        .speech-bubble {
+            position: relative;
+            width: 70%; /* 吹き出しの幅 */
+            padding: 30px;
+            background: white;
+            border-radius: 50px;
+            border: 3px solid #000;
+            font-size: 1.8em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 15%;
+            width: 0;
+            height: 0;
+            border: 30px solid transparent;
+            border-top-color: white;
+            border-bottom: 0;
+            margin-left: -30px;
+            box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+        }
+        .options-container {
+            display: flex;
+            align-items: center;
+            width: 70%;
+            gap: 40px; /* ピカチュウと選択肢の間隔 */
+        }
+        .pikachu {
+            width: 250px; /* ピカチュウのサイズ */
+            transform: scaleX(-1); /* 左右反転 */
+            margin-left: -100px; /* ピカチュウを左にずらす */
+        }
+        .options-box {
+            display: flex;
+            flex-direction: column;
+            gap: 25px; /* ボタン間の間隔 */
+            width: 100%;
+        }
+        .option-button {
+            width: 100%;
+            padding: 20px 30px;
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s;
+        }
+        .option-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 修正ボタン -->
+        <button class="edit-button">修正する</button>
+
+        <!-- 吹き出し -->
+        <div class="speech-bubble">
+            Q1. ～～～～～ 
+        </div>
+
+        <!-- 選択肢とピカチュウ -->
+        <div class="options-container">
+            <!-- ピカチュウ画像 -->
+            <img src="./images/ピカチュウ.png" alt="ピカチュウ" class="pikachu">
+
+            <!-- 選択肢 -->
+            <div class="options-box">
+                <button class="option-button">1. はい</button>
+                <button class="option-button">2. いいえ</button>
+                <button class="option-button">3. わからない</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

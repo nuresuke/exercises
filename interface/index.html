@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Akinator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('./images/akihaikei.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .pokemon-logo {
+            width: 500px; /* Pokémonロゴの幅を調整 */
+            margin-bottom: -180px; /* PokémonロゴとAkinatorロゴの間隔をさらに短く */
+        }
+        .akinator-logo {
+            width: 700px; /* Akinatorロゴの幅を調整 */
+            margin-bottom: -70px;
+        }
+        .start-button {
+            padding: 20px 50px;
+            font-size: 2em; /* ボタンの文字を大きく */
+            font-weight: bold;
+            color: rgb(255, 255, 255);
+            background-color: #74eeda;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s;
+        }
+        .start-button:hover {
+            background-color: #3d5599;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Pokémon ロゴ -->
+        <img src="./images/pokemon-logo.png" alt="Pokémon Logo" class="pokemon-logo">
+        
+        <!-- Akinator ロゴ -->
+        <img src="./images/aki.png" alt="Akinator Logo" class="akinator-logo">
+        
+        <!-- スタートボタン -->
+        <button class="start-button">START</button>
+    </div>
+</body>
+</html>
