@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -8,7 +9,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: url('./images/草.png') no-repeat center center fixed; /* 背景画像設定 */
+            background: url("{% static 'interface/images/gras.png' %}") no-repeat center center fixed; /* 背景画像設定 */
             background-size: cover;
             font-family: Arial, sans-serif;
             display: flex;
@@ -109,13 +110,13 @@
 
         <!-- 吹き出し -->
         <div class="speech-bubble">
-            Q1. ～～～～～ 
+            
         </div>
 
         <!-- 選択肢とピカチュウ -->
         <div class="options-container">
             <!-- ピカチュウ画像 -->
-            <img src="./images/ピカチュウ.png" alt="ピカチュウ" class="pikachu">
+            <img src="{% static 'interface/images/pika.png' %}" alt="ピカチュウ" class="pikachu">
 
             <!-- 選択肢 -->
             <div class="options-box">

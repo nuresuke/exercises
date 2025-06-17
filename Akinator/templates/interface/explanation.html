@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -127,7 +128,7 @@
             <span class="sub">思い浮かべる！</span>
         </div>
         <div class="arrow arrow1">
-            <img src="./images/arrow.png" alt="右斜め下の矢印">
+            <img src="{% static 'interface/images/arrow.png' %}" alt=右斜め下の矢印">
         </div>
         <div class="instruction-box box2">
             <span class="step">②</span>
@@ -135,15 +136,15 @@
             <span class="sub">質問に答える！</span>
         </div>
         <div class="arrow arrow2">
-            <img src="./images/arrow.png" alt="右斜め上の矢印">
+            <img src="{% static 'interface/images/arrow.png' %}" alt="右斜め上の矢印">
         </div>
         <div class="instruction-box box3">
             <span class="step">③</span>
             <span class="main">思い浮かべたポケモンが</span>
             <span class="sub">答え合わせ！</span>
         </div>
-        <img class="minun" src="./images/mainan.png" alt="マイナン">
-        <img class="plusle" src="./images/purasuru.png" alt="プラスル">
+        <img class="minun" src="{% static 'interface/images/mainan.png' %}" alt="マイナン">
+        <img class="plusle" src="{% static 'interface/images/purasuru.png' %}" alt="プラスル">
     </div>
 </body>
 
