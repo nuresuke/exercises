@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congrats Akinator Result</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background: url("{% static 'interface/images/gras2.png' %}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: "Yu Gothic", "Meiryo", sans-serif;
+        }
+        .congrats {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4em; /* サイズUP */
+            color: #000;
+            font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+            text-shadow: 0 2px 12px #fff, 0 1px 2px #aaa;
+            pointer-events: none;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .result-box {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -30%);
+            background: rgba(255,255,255,0.92);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            min-width: 350px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            padding: 40px 80px; /* パネル自体も大きく */
+            gap: 50px; /* 余白を増やす */
+        }
+        .poke-img {
+            width: 250px;  /* 画像サイズ大幅UP */
+            height: 250px;
+            object-fit: contain;
+        }
+        .poke-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 2em; /* 情報も大きく */
+            gap: 16px;
+        }
+        .poke-info .number {
+            font-size: 1.2em;
+            color: #333;
+        }
+        .poke-info .name {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        .poke-info .genders {
+            font-size: 2em;
+            margin-top: 10px;
+        }
+        .genders .male {
+            color: #2196f3;
+            margin-right: 24px;
+        }
+        .genders .female {
+            color: #e91e63;
+        }
+        .button-area {
+            position: absolute;
+            bottom: 7%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 100px; /* ボタン同士の間隔も広く */
+        }
+        .result-btn {
+            font-size: 2.8em; /* ボタン文字も大きく */
+            padding: 24px 80px;
+            background: white;
+            border: 5px solid #333;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            min-width: 220px;
+        }
+        .result-btn:hover {
+            background: #f0f0f0;
+            color: #0066cc;
+        }
+        @media (max-width: 700px) {
+            .result-box {
+                flex-direction: column;
+                gap: 20px;
+                min-width: 90vw;
+                padding: 10px 3vw;
+            }
+            .poke-img {
+                width: 120px;
+                height: 120px;
+            }
+            .poke-info {
+                font-size: 1em;
+                gap: 8px;
+            }
+            .button-area {
+                flex-direction: column;
+                gap: 32px;
+            }
+            .result-btn {
+                font-size: 1.2em;
+                min-width: 120px;
+                padding: 10px 20px;
+            }
+            .congrats {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="congrats">Congratulations!!</div>
+    <div class="result-box">
+        <img class="poke-img" src="{% static 'interface/images/pupurin.png' %}" alt="ププリン">
+        <div class="poke-info">
+            <div class="number">No.0174</div>
+            <div class="name">ププリン</div>
+            <div class="genders">
+                <span class="male">♂</span>
+                <span class="female">♀</span>
+            </div>
+        </div>
+    </div>
+    <div class="button-area">
+        <button class="result-btn">もう一度</button>
+        <button class="result-btn">やめる</button>
+    </div>
+</body>
+</html>
