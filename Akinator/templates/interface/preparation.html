@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>準備画面</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: "Yu Gothic", "Meiryo", sans-serif;
+      background: #fff;
+      width: 100vw;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url("{% static 'interface/images/akihaikei.png' %}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+    .main-area {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      min-width: 320px;
+      min-height: 220px;
+      background: #cfe5f5;
+      overflow: hidden;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .bg-image {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 1;
+      opacity: 0.93;
+      pointer-events: none;
+      user-select: none;
+    }
+    .ash {
+      position: absolute;
+      bottom: 10vh;
+      left: 50%;
+      transform: translateX(-15%);
+      height: 60vh; /* お好みで */
+      width: auto;
+      min-width: 500px;
+      max-width: 400px;
+      z-index: 4;
+      height: auto;
+    }
+    .speech-bubble {
+      position: absolute;
+      left: 10vw;
+      top: 8vh;
+      width: 40vw;
+      min-width: 240px;
+      max-width: 60vw;
+      min-height: 18vh;
+      background: #fff;
+      border-radius: 52% 48% 46% 54%/60% 45% 55% 40%;
+      border: 2px solid #333;
+      padding: 2.5vw 2vw 1.2vw 2vw;
+      font-size: clamp(1em, 2.2vw, 1.5em);
+      box-shadow: 2px 2px 8px #ccc;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    /* 右上UI（説明→？ボタンの順で並べる） */
+    .topright-ui {
+      position: absolute;
+      top: 2vh;
+      right: 2vw;
+      display: flex;
+      align-items: flex-start;
+      gap: 1.2vw;
+      z-index: 20;
+      flex-direction: row; /* ←重要（左:説明, 右:？ボタンならrow-reverse） */
+    }
+
+.howto-bubble {
+  align-self: flex-start;
+  background: #fff;
+  border: 2px solid #888;
+  border-radius: 50px;
+  padding: 0.6em 1.3em;
+  font-size: 1em;
+  box-shadow: 1px 1px 4px #aaa;
+  white-space: nowrap;
+  z-index: 20;
+  margin-top: 0.1em;
+  margin-right: 0;
+  position: relative; /* ★追加 */
+}
+/* 右向き三角ヒゲ（ボーダー＋白地） */
+.howto-bubble::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -20px; /* 三角形が外にはみ出るように調整 */
+  transform: translateY(-50%);
+  /* 外側：グレーのボーダー */
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 20px solid #888;  /* ボーダー色 */
+  z-index: 1;
+}
+.howto-bubble::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -14px; /* 外側より少し内側 */
+  transform: translateY(-50%);
+  /* 内側：白 */
+  width: 0;
+  height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 18px solid #fff;  /* バルーン本体色 */
+  z-index: 2;
+}
+    
+    .question-bubble {
+      width: 54px;
+      height: 54px;
+      background: #fff;
+      border: 2px solid #888;
+      border-radius: 50%;
+      font-size: 2.2em;
+      text-align: center;
+      font-weight: bold;
+      box-shadow: 1px 1px 4px #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 21;
+      cursor: pointer;
+      user-select: none;
+      transition: box-shadow 0.2s;
+    }
+    .question-bubble:hover {
+      box-shadow: 0 0 14px #77bbff;
+    }
+    @media (max-width: 600px), (max-height: 500px) {
+      .speech-bubble {
+        width: 80vw;
+        left: 8vw;
+        top: 2vh;
+        font-size: clamp(0.9em, 3vw, 1.1em);
+        min-width: 120px;
+      }
+      .ash {
+        width: 30vw;
+        min-width: 60px;
+        bottom: 7vh;
+        left: 100vw;
+      }
+      .topright-ui {
+        top: 1vh;
+        right: 2vw;
+        gap: 2vw;
+      }
+      .question-bubble {
+        width: 38px;
+        height: 38px;
+        font-size: 1.4em;
+      }
+      .howto-bubble {
+        font-size: 0.9em;
+        padding: 0.4em 0.8em;
+        left: 30vw;
+      }
+    }
+    .ready-btn {
+      position: absolute;
+      left: 50%;
+      bottom: 10vh;
+      transform: translateX(-180%);
+      background: #fff;
+      border: 2px solid #333;
+      border-radius: 7px;
+      padding: 1em 2.8em;
+      font-size: clamp(1.05em, 2vw, 1.5em);
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      z-index: 8;
+      box-shadow: 1px 1px 7px #bbb;
+    }
+    .ready-btn:hover {
+      background: #e0f4e0;
+    }
+  </style>
+  <script>
+    tippy('#howto', {
+      content: '遊び方説明はこちら！',
+      theme: 'light',
+      placement: 'left',
+      trigger: 'manual', // 手動表示
+      showOnCreate: true, // 最初から表示
+      arrow: true,
+      offset: [0, 12],
+    });
+    </script>
+</head>
+<body>
+  <div class="main-area">
+    <!-- 背景画像 -->
+    <img src="{% static 'interface/images/gras.png' %}" alt="準備画面背景" class="bg-image">
+
+    <!-- 右上UIまとめ（説明→？ボタンの順） -->
+    <div class="topright-ui">
+      <div class="howto-bubble">遊び方説明はこちら！</div>
+      <button class="question-bubble">？</button>
+    </div>
+
+    <!-- 吹き出し -->
+    <div class="speech-bubble">
+      カントー地方のポケモンの中から好きなポケモンを思い浮かべてね！
+    </div>
+    <!-- サトシ画像 -->
+    <img src="{% static 'interface/images/satoshi_v1.png' %}" alt="サトシ" class="ash">
+    <!-- 準備OKボタン -->
+    <button class="ready-btn">準備OK!</button>
+  </div>
+</body>
+</html>

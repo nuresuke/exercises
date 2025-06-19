@@ -6,6 +6,8 @@ import numpy as np
 # Create your views here.
 def index_view(request):
     return render(request, "interface/index.html")
+def preparation_view(request):
+    return render(request, "interface/preparation.html")
 
 #文字列のベクトル化
 def one_hot_encode_type(type_str):
