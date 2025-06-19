@@ -231,7 +231,9 @@
     <!-- 右上UIまとめ（説明→？ボタンの順） -->
     <div class="topright-ui">
       <div class="howto-bubble">遊び方説明はこちら！</div>
+      <form action="{% url 'explanation_page' %}" method="get">
       <button class="question-bubble">？</button>
+      </form>
     </div>
 
     <!-- 吹き出し -->

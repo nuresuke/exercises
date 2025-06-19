@@ -8,6 +8,8 @@ def index_view(request):
     return render(request, "interface/index.html")
 def preparation_view(request):
     return render(request, "interface/preparation.html")
+def explanation_view(request):
+    return render(request, "interface/explanation.html")
 
 #文字列のベクトル化
 def one_hot_encode_type(type_str):
