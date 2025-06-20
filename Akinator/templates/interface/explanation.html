@@ -1,7 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,16 +11,15 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
-
         .container {
             position: relative;
-            width: 100%;
+            width: 100vw;
             height: 100vh;
             background-image: url("{% static 'interface/images/gras.png' %}");
             background-size: cover;
             background-position: center;
+            overflow: hidden;
         }
-
         .back-button {
             position: absolute;
             top: 10px;
@@ -32,120 +30,144 @@
             border-radius: 5px;
             background-color: white;
             cursor: pointer;
+            z-index: 10;
         }
-
         .title {
             text-align: center;
             font-size: 60px;
             font-weight: bold;
             color: black;
             letter-spacing: 0.1em;
+            margin-top: 24px;
         }
 
-        .instruction-box {
+        /* 三角形レイアウト全体 */
+        .triangle-area {
             position: absolute;
-            width: 300px;
-            background-color: white;
-            border: 2px solid black;
+            left: 50%;
+            top: 52%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            max-width: 90vw;
+            height: 500px;
+            max-height: 60vw;
+            pointer-events: none;
+        }
+        /* 三頂点ボックス配置 */
+        .box1, .box2, .box3 {
+            position: absolute;
+            width: 350px;
+            max-width: 44vw;
+            background: #fff;
+            border: 2px solid #000;
             border-radius: 10px;
-            padding: 20px;
+            padding: 24px 16px;
             text-align: center;
             font-weight: bold;
+            pointer-events: auto;
         }
-        .instruction-box span {
-            display: block;
+        .box1 {
+            left: -15%;
+            top: 0;
         }
-        .instruction-box .step {
-            font-size: 32px;
+        .box2 {
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
         }
-        .instruction-box .main {
-            font-size: 28px;
-            margin: 10px 0 0 0;
+        .box3 {
+            right: -15%;
+            top: 0;
         }
-        .instruction-box .sub {
-            font-size: 28px;
-        }
+        /* 中身の文字サイズ */
+        .step { font-size: 32px; display: block; }
+        .main { font-size: 28px; margin: 10px 0 0 0; display: block;}
+        .sub { font-size: 28px; display: block;}
 
+        /* 矢印配置 */
         .arrow {
             position: absolute;
-            width: 50px;
-            height: 50px;
-            z-index: 1;
+            width: 80px;
+            height: 60px;
+            z-index: 2;
+            pointer-events: none;
         }
-        .arrow img {
-            width: 200%;
-            height: 200%;
-        }
-        .arrow1 img {
+        .arrow1 {
+            left: 180px;
+            top: 220px;
             transform: rotate(225deg);
         }
-        .arrow2 img {
+        .arrow2 {
+            right: 180px;
+            top: 220px;
             transform: rotate(135deg);
         }
-
+        .arrow img {
+            width: 100%;
+            height: 100%;
+        }
+        /* ポケモン画像 */
         .minun {
             position: absolute;
-            width: 400px;
-            bottom: 10%;
-            left: 0%;
+            width: 300px;
+            min-width: 120px;
+            bottom: 6%;
+            left: 3%;
+            z-index: 5;
+            pointer-events: none;
         }
         .plusle {
             position: absolute;
-            width: 400px;
-            bottom: 10%;
-            right: 0%;
+            width: 300px;
+            min-width: 120px;
+            bottom: 6%;
+            right: 3%;
+            z-index: 5;
+            pointer-events: none;
         }
-        .box1 {
-            top: 20%;
-            left: 10%;
+        @media (max-width: 900px) {
+            .triangle-area { width: 90vw; height: 54vw; }
+            .box1, .box2, .box3 { width: 35vw; min-width:110px; padding: 10px 4px;}
+            .arrow, .arrow img { width: 38px; height: 38px; }
         }
-        .arrow1 {
-            top: 35%;
-            left: 30%;
-        }
-        .box2 {
-            top: 50%;
-            left: 40%;
-        }
-        .arrow2 {
-            top: 35%;
-            left: 60%;
-        }
-        .box3 {
-            top: 20%;
-            right: 15%;
+        @media (max-width: 600px) {
+            .title { font-size: 30px; }
+            .triangle-area { top: 56%; height: 62vw; }
+            .box1, .box2, .box3 { font-size: 14px; padding: 8px 2px;}
         }
     </style>
 </head>
-
 <body>
     <div class="container">
+        <form action="{% url 'prepare_page' %}" method="get">
         <button class="back-button">戻る</button>
+        </form>
         <div class="title">～ 遊び方 説明 ～</div>
-        <div class="instruction-box box1">
-            <span class="step">①</span>
-            <span class="main">好きなポケモンを</span>
-            <span class="sub">思い浮かべる！</span>
-        </div>
-        <div class="arrow arrow1">
-            <img src="{% static 'interface/images/arrow.png' %}" alt=右斜め下の矢印">
-        </div>
-        <div class="instruction-box box2">
-            <span class="step">②</span>
-            <span class="main">そのポケモンについての</span>
-            <span class="sub">質問に答える！</span>
-        </div>
-        <div class="arrow arrow2">
-            <img src="{% static 'interface/images/arrow.png' %}" alt="右斜め上の矢印">
-        </div>
-        <div class="instruction-box box3">
-            <span class="step">③</span>
-            <span class="main">思い浮かべたポケモンが</span>
-            <span class="sub">答え合わせ！</span>
+        <div class="triangle-area">
+            <div class="instruction-box box1">
+                <span class="step">①</span>
+                <span class="main">好きなポケモンを</span>
+                <span class="sub">思い浮かべる！</span>
+            </div>
+            <div class="instruction-box box3">
+                <span class="step">③</span>
+                <span class="main">思い浮かべたポケモンを</span>
+                <span class="sub">答え合わせ！</span>
+            </div>
+            <div class="instruction-box box2">
+                <span class="step">②</span>
+                <span class="main">そのポケモンについての</span>
+                <span class="sub">質問に答える！</span>
+            </div>
+            <div class="arrow arrow1">
+                <img src="{% static 'interface/images/arrow.png' %}" alt="矢印">
+            </div>
+            <div class="arrow arrow2">
+                <img src="{% static 'interface/images/arrow.png' %}" alt="矢印">
+            </div>
         </div>
         <img class="minun" src="{% static 'interface/images/mainan.png' %}" alt="マイナン">
         <img class="plusle" src="{% static 'interface/images/purasuru.png' %}" alt="プラスル">
     </div>
 </body>
-
 </html>

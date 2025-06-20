@@ -232,7 +232,7 @@
     <div class="topright-ui">
       <div class="howto-bubble">遊び方説明はこちら！</div>
       <form action="{% url 'explanation_page' %}" method="get">
-      <button class="question-bubble">？</button>
+      <button class="question-bubble" name="next" value="exquramation">？</button>
       </form>
     </div>
 
@@ -243,7 +243,9 @@
     <!-- サトシ画像 -->
     <img src="{% static 'interface/images/satoshi_v1.png' %}" alt="サトシ" class="ash">
     <!-- 準備OKボタン -->
-    <button class="ready-btn">準備OK!</button>
+    <form action="{% url 'question_page' %}" method="get">
+    <button class="ready-btn" name="next" value="preOK">準備OK!</button>
+    </form>
   </div>
 </body>
 </html>

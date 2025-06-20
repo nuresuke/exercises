@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .models import Pokemon
 import tensorflow as tf
 import numpy as np
@@ -6,10 +6,16 @@ import numpy as np
 # Create your views here.
 def index_view(request):
     return render(request, "interface/index.html")
+
 def preparation_view(request):
     return render(request, "interface/preparation.html")
+
 def explanation_view(request):
     return render(request, "interface/explanation.html")
+
+def question_view(request):
+    return render(request, "interface/question.html")
+
 
 #文字列のベクトル化
 def one_hot_encode_type(type_str):
