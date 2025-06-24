@@ -79,73 +79,52 @@
     </div>
     
     <script>
-      //音声の再生
-      document.getElementById("audio").play();
-
-      //音声の一時停止
-      document.getElementById("audio").pause();
-
-
-      $(function () {
-      var audioBtn = $(".audio_button"),
-          audioWrap = $(".audio_wrap"),
-          audio = document.getElementById("audio");
-
-      audioBtn.on("click", function () {
-          if (audioWrap.hasClass("play")) {
-          audio.pause();
-          audioWrap.removeClass("play");
-          } else {
-          audio.play();
-          audioWrap.addClass("play");
-          }
-      });
-      });
-    // フェードイン処理
-    function fadeIn() {
-      const overlay = document.getElementById('fadein-overlay');
-      if (!overlay) return;
-      overlay.style.display = 'block';
-      overlay.style.opacity = '1';
+      // フェードイン処理
+  function fadeIn() {
+    const overlay = document.getElementById('fadein-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'block';
+    overlay.style.opacity = '1';
+    setTimeout(() => {
+      overlay.style.opacity = '0';
       setTimeout(() => {
-        overlay.style.opacity = '0';
-        setTimeout(() => {
-          overlay.style.display = 'none';
-        }, 700);
-      }, 10);
-    }
-
-    // フェードアウト→遷移
-    document.querySelectorAll('form').forEach(form => {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const overlay = document.getElementById('fadeout-overlay');
-        overlay.style.display = 'block';
-        // opacity:0→1を確実にトリガー
-        requestAnimationFrame(() => {
-          overlay.style.opacity = '1';
-        });
-        setTimeout(() => {
-          form.submit();
-        }, 700);
-      });
-    });
-
-    // 初回・戻る時のフェードイン
-    window.addEventListener('load', fadeIn);
-    window.addEventListener('pageshow', function(event) {
-    const fadeout = document.getElementById('fadeout-overlay');
-        if (fadeout) {
-            fadeout.style.opacity = '0';
-            fadeout.style.display = 'none';
-        }
-      // 真っ黒で復元されてもここでフェードイン
-      const overlay = document.getElementById('fadein-overlay');
-      if (!overlay) return;
+        overlay.style.display = 'none';
+      }, 700);
+    }, 10);
+  }
+  // フェードアウト→遷移
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const overlay = document.getElementById('fadeout-overlay');
       overlay.style.display = 'block';
-      overlay.style.opacity = '1';
-      setTimeout(fadeIn, 10);
+      requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+      });
+      setTimeout(() => {
+        form.submit();
+      }, 700);
     });
+  });
+
+  window.addEventListener('load', fadeIn);
+  window.addEventListener('pageshow', function(event) {
+    const fadeout = document.getElementById('fadeout-overlay');
+    if (fadeout) {
+        fadeout.style.opacity = '0';
+        fadeout.style.display = 'none';
+    }
+    const overlay = document.getElementById('fadein-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'block';
+    overlay.style.opacity = '1';
+    setTimeout(fadeIn, 10);
+  });
+
+  // STARTボタンクリック時に音声再生
+  $(".start-button").on("click", function() {
+    $("#audio")[0].play();
+  });
     </script>
 </body>
 </html>
