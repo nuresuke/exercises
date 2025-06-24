@@ -188,7 +188,30 @@
         <img class="minun" src="{% static 'interface/images/mainan.png' %}" alt="マイナン">
         <img class="plusle" src="{% static 'interface/images/purasuru.png' %}" alt="プラスル">
     </div>
+    <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
     <script>
+        //音声の再生
+        document.getElementById("audio").play();
+
+        //音声の一時停止
+        document.getElementById("audio").pause();
+
+
+        $(function () {
+        var audioBtn = $(".audio_button"),
+            audioWrap = $(".audio_wrap"),
+            audio = document.getElementById("audio");
+
+        audioBtn.on("click", function () {
+            if (audioWrap.hasClass("play")) {
+            audio.pause();
+            audioWrap.removeClass("play");
+            } else {
+            audio.play();
+            audioWrap.addClass("play");
+            }
+        });
+        });
         // フェードイン処理
         function fadeIn() {
           const overlay = document.getElementById('fadein-overlay');
