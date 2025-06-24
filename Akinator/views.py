@@ -1,5 +1,7 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render
+from Akinator.management.commands.generate_question import get_dynamic_questions
 from .models import Pokemon
+from .tf_model import SimpleQuestionSelector
 import tensorflow as tf
 import numpy as np
 
@@ -13,8 +15,6 @@ def preparation_view(request):
 def explanation_view(request):
     return render(request, "interface/explanation.html")
 
-def question_view(request):
-    return render(request, "interface/question.html")
 
 
 #文字列のベクトル化
@@ -29,7 +29,7 @@ def one_hot_encode_color(color_str):
     return vec
 
 #DjangoでDBからポケモン情報を取得し、TensorFlowモデルで条件を満たすポケモンだけ絞り込む基本構造
-def pokemon_list_view(request):
+def is_CorrectAnswer(request):
     # 1. DBから全ポケモン取得
     pokemons = Pokemon.objects.all()
 
@@ -60,3 +60,38 @@ def pokemon_list_view(request):
 
     # 4. テンプレートに渡して表示
     return render(request, "interface/pokemon_list.html", {"pokemons": filtered_pokemons})
+
+def get_answers_vector(request):
+    """
+    質問リストとユーザー回答履歴（セッション）からanswers_vectorを作成
+    """
+    # 1. 全質問リストを取得
+    all_questions = get_dynamic_questions()
+    
+    # 2. 回答履歴をセッションから取得（例: {"Q1": 1, "Q2": 0, ...}）
+    user_answers = request.session.get("user_answers", {})
+    
+    # 3. ベクトル化
+    answers_vector = []
+    for q in all_questions:
+        # 質問IDまたはテキストでキーを決める（例: q["id"] または q["text"]）
+        qid = q.get("id") or q.get("text")
+        answer = user_answers.get(qid, -1)  # 未回答は-1
+        answers_vector.append(answer)
+    
+    return answers_vector
+
+def question_view(request):
+    # 回答履歴を取得（例：セッションやPOSTから）
+    answers_vector = get_answers_vector(request)  # 履歴から前処理
+    selector = SimpleQuestionSelector()
+    next_q_idx = selector.predict_next_question(answers_vector)
+
+    all_questions = get_dynamic_questions()
+    if next_q_idx < len(all_questions):
+        next_question = all_questions[next_q_idx]
+    else:
+        next_question = {"text": "質問がありません"}
+
+    return render(request, "interface/question.html", {"question": next_question})
+

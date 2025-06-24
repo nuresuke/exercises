@@ -128,7 +128,7 @@
 
         <!-- 吹き出し -->
         <div class="speech-bubble">
-            
+            {{ question.text }}
         </div>
 
         <!-- 選択肢とピカチュウ -->
@@ -136,12 +136,14 @@
             <!-- ピカチュウ画像 -->
             <img src="{% static 'interface/images/pika.png' %}" alt="ピカチュウ" class="pikachu">
 
-            <!-- 選択肢 -->
-            <div class="options-box">
-                <button class="option-button">1. はい</button>
-                <button class="option-button">2. いいえ</button>
-                <button class="option-button">3. わからない</button>
-            </div>
+            <form method="POST" class="options-box">
+                {% csrf_token %}
+                <!-- 質問IDをhiddenで送る -->
+                <input type="hidden" name="question_id" value="{{ question.id|default:'' }}">
+                <button class="option-button" type="submit" name="answer" value="1">1. はい</button>
+                <button class="option-button" type="submit" name="answer" value="0">2. いいえ</button>
+                <button class="option-button" type="submit" name="answer" value="-1">3. わからない</button>
+            </form>
         </div>
     </div>
     <script>
