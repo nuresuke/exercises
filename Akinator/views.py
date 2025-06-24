@@ -28,6 +28,7 @@ def one_hot_encode_color(color_str):
     vec = [1 if color_str == c else 0 for c in color_list]
     return vec
 
+#DjangoでDBからポケモン情報を取得し、TensorFlowモデルで条件を満たすポケモンだけ絞り込む基本構造
 def pokemon_list_view(request):
     # 1. DBから全ポケモン取得
     pokemons = Pokemon.objects.all()

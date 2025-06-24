@@ -24,16 +24,16 @@
             text-align: center;
         }
         .pokemon-logo {
-            width: 500px; /* Pokémonロゴの幅を調整 */
-            margin-bottom: -180px; /* PokémonロゴとAkinatorロゴの間隔をさらに短く */
+            width: 500px;
+            margin-bottom: -180px;
         }
         .akinator-logo {
-            width: 700px; /* Akinatorロゴの幅を調整 */
+            width: 700px;
             margin-bottom: -70px;
         }
         .start-button {
             padding: 20px 50px;
-            font-size: 2em; /* ボタンの文字を大きく */
+            font-size: 2em;
             font-weight: bold;
             color: rgb(255, 255, 255);
             background-color: #74eeda;
@@ -47,20 +47,80 @@
         .start-button:hover {
             background-color: #3d5599;
         }
+        #fadein-overlay, #fadeout-overlay {
+            position: fixed;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: #000;
+            z-index: 9999;
+            transition: opacity 0.7s;
+            pointer-events: none;
+        }
+        #fadein-overlay {
+            opacity: 1;
+            display: block;
+        }
+        #fadeout-overlay {
+            opacity: 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <div id="fadein-overlay"></div>
+    <div id="fadeout-overlay"></div>
     <div class="container">
-        <!-- Pokémon ロゴ -->
         <img src="{% static 'interface/images/pokemon-logo.png' %}" alt="Pokémon Logo" class="pokemon-logo">
-
-        <!-- Akinator ロゴ -->
         <img src="{% static 'interface/images/aki.png' %}" alt="Akinator Logo" class="akinator-logo">
-        
-        <!-- スタートボタン -->
         <form action="{% url 'prepare_page' %}" method="get">
-        <button class="start-button">START</button>
+            <button class="start-button">START</button>
         </form>
     </div>
+    <script>
+    // フェードイン処理
+    function fadeIn() {
+      const overlay = document.getElementById('fadein-overlay');
+      if (!overlay) return;
+      overlay.style.display = 'block';
+      overlay.style.opacity = '1';
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 700);
+      }, 10);
+    }
+
+    // フェードアウト→遷移
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const overlay = document.getElementById('fadeout-overlay');
+        overlay.style.display = 'block';
+        // opacity:0→1を確実にトリガー
+        requestAnimationFrame(() => {
+          overlay.style.opacity = '1';
+        });
+        setTimeout(() => {
+          form.submit();
+        }, 700);
+      });
+    });
+
+    // 初回・戻る時のフェードイン
+    window.addEventListener('load', fadeIn);
+    window.addEventListener('pageshow', function(event) {
+    const fadeout = document.getElementById('fadeout-overlay');
+        if (fadeout) {
+            fadeout.style.opacity = '0';
+            fadeout.style.display = 'none';
+        }
+      // 真っ黒で復元されてもここでフェードイン
+      const overlay = document.getElementById('fadein-overlay');
+      if (!overlay) return;
+      overlay.style.display = 'block';
+      overlay.style.opacity = '1';
+      setTimeout(fadeIn, 10);
+    });
+    </script>
 </body>
 </html>

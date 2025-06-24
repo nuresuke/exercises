@@ -2,6 +2,11 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <!-- Popper.js（Tippy.jsの依存） -->
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <!-- Tippy.js本体 -->
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+  <script src="https://unpkg.com/tippy.js@6"></script>
   <meta charset="UTF-8">
   <title>準備画面</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -210,6 +215,23 @@
     .ready-btn:hover {
       background: #e0f4e0;
     }
+    #fadein-overlay, #fadeout-overlay {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: #000;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    #fadein-overlay {
+      opacity: 1;
+      transition: opacity 2s;
+      display: block;
+    }
+    #fadeout-overlay {
+      opacity: 0;
+      transition: opacity 0.7s;
+      display: none;
+    }
   </style>
   <script>
     tippy('#howto', {
@@ -224,6 +246,8 @@
     </script>
 </head>
 <body>
+  <div id="fadein-overlay"></div>
+  <div id="fadeout-overlay"></div>
   <div class="main-area">
     <!-- 背景画像 -->
     <img src="{% static 'interface/images/gras.png' %}" alt="準備画面背景" class="bg-image">
@@ -247,5 +271,46 @@
     <button class="ready-btn" name="next" value="preOK">準備OK!</button>
     </form>
   </div>
+  <script>
+    function fadeIn() {
+      const overlay = document.getElementById('fadein-overlay');
+      if (!overlay) return;
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 2000);
+    }
+    // フェードアウト→遷移
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const overlay = document.getElementById('fadeout-overlay');
+        overlay.style.display = 'block';
+        // opacity:0→1を確実にトリガー
+        requestAnimationFrame(() => {
+          overlay.style.opacity = '1';
+        });
+        setTimeout(() => {
+          form.submit();
+        }, 700);
+      });
+    });
+
+    // 初回・戻る時のフェードイン
+    window.addEventListener('load', fadeIn);
+    window.addEventListener('pageshow', function(event) {
+    const fadeout = document.getElementById('fadeout-overlay');
+        if (fadeout) {
+            fadeout.style.opacity = '0';
+            fadeout.style.display = 'none';
+        }
+      // 真っ黒で復元されてもここでフェードイン
+      const overlay = document.getElementById('fadein-overlay');
+      if (!overlay) return;
+      overlay.style.display = 'block';
+      overlay.style.opacity = '1';
+      setTimeout(fadeIn, 10);
+    });
+  </script>
 </body>
 </html>

@@ -135,9 +135,28 @@
             .triangle-area { top: 56%; height: 62vw; }
             .box1, .box2, .box3 { font-size: 14px; padding: 8px 2px;}
         }
+        #fadein-overlay, #fadeout-overlay {
+        position: fixed;
+        left: 0; top: 0; width: 100vw; height: 100vh;
+        background: #000;
+        z-index: 9999;
+        pointer-events: none;
+        }
+        #fadein-overlay {
+        opacity: 1;
+        transition: opacity 2s;
+        display: block;
+        }
+        #fadeout-overlay {
+        opacity: 0;
+        transition: opacity 0.7s;
+        display: none;
+        }
     </style>
 </head>
 <body>
+    <div id="fadein-overlay"></div>
+    <div id="fadeout-overlay"></div>
     <div class="container">
         <form action="{% url 'prepare_page' %}" method="get">
         <button class="back-button">戻る</button>
@@ -169,5 +188,52 @@
         <img class="minun" src="{% static 'interface/images/mainan.png' %}" alt="マイナン">
         <img class="plusle" src="{% static 'interface/images/purasuru.png' %}" alt="プラスル">
     </div>
+    <script>
+        // フェードイン処理
+        function fadeIn() {
+          const overlay = document.getElementById('fadein-overlay');
+          if (!overlay) return;
+          overlay.style.display = 'block';
+          overlay.style.opacity = '1';
+          setTimeout(() => {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+              overlay.style.display = 'none';
+            }, 2000);
+          }, 10);
+        }
+    
+        // フェードアウト→遷移
+        document.querySelectorAll('form').forEach(form => {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const overlay = document.getElementById('fadeout-overlay');
+            overlay.style.display = 'block';
+            // opacity:0→1を確実にトリガー
+            requestAnimationFrame(() => {
+              overlay.style.opacity = '1';
+            });
+            setTimeout(() => {
+              form.submit();
+            }, 700);
+          });
+        });
+    
+        // 初回・戻る時のフェードイン
+        window.addEventListener('load', fadeIn);
+        window.addEventListener('pageshow', function(event) {
+        const fadeout = document.getElementById('fadeout-overlay');
+            if (fadeout) {
+                fadeout.style.opacity = '0';
+                fadeout.style.display = 'none';
+            }
+          // 真っ黒で復元されてもここでフェードイン
+          const overlay = document.getElementById('fadein-overlay');
+          if (!overlay) return;
+          overlay.style.display = 'block';
+          overlay.style.opacity = '1';
+          setTimeout(fadeIn, 20);
+        });
+        </script>
 </body>
 </html>
