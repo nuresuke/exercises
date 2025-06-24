@@ -19,7 +19,7 @@ def explanation_view(request):
 
 #文字列のベクトル化
 def one_hot_encode_type(type_str):
-    type_list = ['みず', 'ほのお', 'くさ','ノーマル', 'ほのお', 'みず', 'くさ', 'でんき', 'こおり', 'かくとう', 'どく', 'じめん', 'ひこう',
+    type_list = ['みず', 'ほのお', 'くさ','ノーマル', 'くさ', 'でんき', 'こおり', 'かくとう', 'どく', 'じめん', 'ひこう',
                  'エスパー', 'むし', 'いわ', 'ゴースト', 'ドラゴン', 'あく', 'はがね', 'フェアリー']  # すべてのタイプを列挙
     vec = [1 if type_str == t else 0 for t in type_list]
     return vec
@@ -52,7 +52,7 @@ def is_CorrectAnswer(request):
     features = np.array(features)
 
     # 3. TensorFlowで絞り込み
-    model = tf.keras.models.load_model('model_path')
+    model = tf.keras.models.load_model('./tf_model.py')
     preds = model.predict(features)
 
     # しきい値を設定して、条件を満たすものだけ抽出
@@ -83,15 +83,18 @@ def get_answers_vector(request):
 
 def question_view(request):
     # 回答履歴を取得（例：セッションやPOSTから）
-    answers_vector = get_answers_vector(request)  # 履歴から前処理
-    selector = SimpleQuestionSelector()
-    next_q_idx = selector.predict_next_question(answers_vector)
+     if request.method == "POST":
+        # 回答を受け取ってセッションに保存
+        answer = request.POST.get("answer")
+        question_id = request.POST.get("question_id")
+        user_answers = request.session.get("user_answers", {})
+        user_answers[question_id] = int(answer)
+        request.session["user_answers"] = user_answers
 
-    all_questions = get_dynamic_questions()
-    if next_q_idx < len(all_questions):
-        next_question = all_questions[next_q_idx]
-    else:
-        next_question = {"text": "質問がありません"}
-
-    return render(request, "interface/question.html", {"question": next_question})
+        answers_vector = get_answers_vector(request)
+        selector = SimpleQuestionSelector()
+        next_q_idx = selector.predict_next_question(answers_vector)
+        all_questions = get_dynamic_questions()
+        next_question = all_questions[next_q_idx] if next_q_idx < len(all_questions) else {"text": "質問がありません"}
+        return render(request, "interface/question.html", {"question": next_question})
 

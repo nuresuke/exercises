@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <title>Pokémon Akinator</title>
     <style>
         body {
@@ -66,6 +67,7 @@
     </style>
 </head>
 <body>
+    <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop id="audio"></audio>
     <div id="fadein-overlay"></div>
     <div id="fadeout-overlay"></div>
     <div class="container">
@@ -75,7 +77,7 @@
             <button class="start-button">START</button>
         </form>
     </div>
-    <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
+    
     <script>
       //音声の再生
       document.getElementById("audio").play();
