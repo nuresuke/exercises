@@ -10,7 +10,7 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
-            background: url("{% static 'interface/images/gras2.png' %}") no-repeat center center fixed;
+            background: url(gras2.jpg) no-repeat center center fixed;
             background-size: cover;
             font-family: "Yu Gothic", "Meiryo", sans-serif;
         }
@@ -128,7 +128,7 @@
 <body>
     <div class="congrats">Congratulations!!</div>
     <div class="result-box">
-        <img class="poke-img" src="{% static 'interface/images/pupurin.png' %}" alt="ププリン">
+        <img class="poke-img" src="pupurin.png" alt="ププリン">
         <div class="poke-info">
             <div class="number">No.0174</div>
             <div class="name">ププリン</div>
@@ -141,6 +141,31 @@
     <div class="button-area">
         <button class="result-btn">もう一度</button>
         <button class="result-btn">やめる</button>
+        <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
+        <script>
+            //音声の再生
+            document.getElementById("audio").play();
+
+            //音声の一時停止
+            document.getElementById("audio").pause();
+
+
+            $(function () {
+            var audioBtn = $(".audio_button"),
+                audioWrap = $(".audio_wrap"),
+                audio = document.getElementById("audio");
+
+            audioBtn.on("click", function () {
+                if (audioWrap.hasClass("play")) {
+                audio.pause();
+                audioWrap.removeClass("play");
+                } else {
+                audio.play();
+                audioWrap.addClass("play");
+                }
+            });
+            });
+        </script>
     </div>
 </body>
 </html>
