@@ -1,7 +1,10 @@
+import os
 from django.shortcuts import render
 from Akinator.management.commands.generate_question import get_dynamic_questions
+from django.conf import settings
 from .models import Pokemon
 from .tf_model import SimpleQuestionSelector
+from .utils import *
 import tensorflow as tf
 import numpy as np
 
@@ -16,85 +19,108 @@ def explanation_view(request):
     return render(request, "interface/explanation.html")
 
 
-
-#文字列のベクトル化
-def one_hot_encode_type(type_str):
-    type_list = ['みず', 'ほのお', 'くさ','ノーマル', 'くさ', 'でんき', 'こおり', 'かくとう', 'どく', 'じめん', 'ひこう',
-                 'エスパー', 'むし', 'いわ', 'ゴースト', 'ドラゴン', 'あく', 'はがね', 'フェアリー']  # すべてのタイプを列挙
-    vec = [1 if type_str == t else 0 for t in type_list]
-    return vec
-def one_hot_encode_color(color_str):
-    color_list = ['あか', 'あお', 'きいろ', 'みどり', 'くろ', 'しろ', 'ちゃいろ', 'オレンジ','むらさき', 'グレー', 'ピンク']
-    vec = [1 if color_str == c else 0 for c in color_list]
-    return vec
-
 #DjangoでDBからポケモン情報を取得し、TensorFlowモデルで条件を満たすポケモンだけ絞り込む基本構造
-def is_CorrectAnswer(request):
-    # 1. DBから全ポケモン取得
+def filter_candidates(answers_vector):
     pokemons = Pokemon.objects.all()
-
-    # 2. データをTensorFlow用に整形
+    skill_list = sorted(list(Pokemon.objects.exclude(has_special_skill='').values_list('has_special_skill', flat=True).distinct()))
+    avil_list = sorted(list(Pokemon.objects.exclude(characteristic='').values_list('characteristic', flat=True).distinct()))
     features = []
+    valid_pokemons = []
     for p in pokemons:
-            feature = []
-            feature.extend(one_hot_encode_type(p.type)),     # 文字列→One-Hot
-            feature.extend(one_hot_encode_color(p.color)),    # 文字列→One-Hot
-            feature.extend([
+        feature = []
+        feature.extend(one_hot_encode_type(p.type))
+        feature.extend(one_hot_encode_color(p.color))
+        feature.extend(one_hot_encode_skill(p.has_special_skill, skill_list))
+        feature.extend(one_hot_encode_avility(p.characteristic, avil_list))
+        feature.extend([
             p.weight,
             p.height,
+            float(p.evolution),
             int(p.can_fly),
             int(p.is_legendary),
             int(p.is_fossil),
-            int(p.has_special_skill),
             int(p.has_sash),
         ])
+        compare_values = [
+            p.type,             # 0: type
+            p.color,            # 1: color
+            p.has_special_skill,# 2: skill
+            p.characteristic,   # 3: avility
+            p.weight,           # 4: weight
+            p.height,           # 5: height
+            p.evolution,        # 6: evolution
+            int(p.can_fly),     # 7: can_fly
+            int(p.is_legendary),# 8: is_legendary
+            int(p.is_fossil),   # 9: is_fossil
+            int(p.has_sash),    # 10: has_sash
+        ]
+        is_candidate = True
+        for i, ans in enumerate(answers_vector):
+            if ans is None:
+                continue
+            print(f"compare_values[{i}]:", compare_values[i], type(compare_values[i]))
+            print(f"ans[{i}]:", ans, type(ans))
+            if str(compare_values[i]) != str(ans):
+                is_candidate = False
+                break
+        if is_candidate:
             features.append(feature)
+            valid_pokemons.append(p)
+
+    if not features:
+        return []
+
     features = np.array(features)
-
-    # 3. TensorFlowで絞り込み
-    model = tf.keras.models.load_model('./tf_model.py')
+    MODEL_PATH = os.path.join(settings.BASE_DIR, "pokemon_filter_model.keras")
+    model = tf.keras.models.load_model(MODEL_PATH)
     preds = model.predict(features)
-
-    # しきい値を設定して、条件を満たすものだけ抽出
-    filtered_pokemons = [p for p, pred in zip(pokemons, preds) if pred > 0.95]
-
-    # 4. テンプレートに渡して表示
-    return render(request, "interface/pokemon_list.html", {"pokemons": filtered_pokemons})
+    print("preds shape:", preds.shape)
+    print("pred example:", preds[0])
+    threshold = 0.95
+    filtered_pokemons = [
+    p for i, p in enumerate(valid_pokemons)
+    if preds[i][i] > threshold
+    ]
+    return filtered_pokemons
 
 def get_answers_vector(request):
     """
     質問リストとユーザー回答履歴（セッション）からanswers_vectorを作成
     """
-    # 1. 全質問リストを取得
     all_questions = get_dynamic_questions()
-    
-    # 2. 回答履歴をセッションから取得（例: {"Q1": 1, "Q2": 0, ...}）
     user_answers = request.session.get("user_answers", {})
-    
-    # 3. ベクトル化
     answers_vector = []
     for q in all_questions:
-        # 質問IDまたはテキストでキーを決める（例: q["id"] または q["text"]）
         qid = q.get("id") or q.get("text")
-        answer = user_answers.get(qid, -1)  # 未回答は-1
-        answers_vector.append(answer)
-    
+        answer = user_answers.get(str(qid))
+        if answer is None:
+            answers_vector.append(None)
+        else:
+            answers_vector.append(answer)
     return answers_vector
 
 def question_view(request):
-    # 回答履歴を取得（例：セッションやPOSTから）
-     if request.method == "POST":
-        # 回答を受け取ってセッションに保存
-        answer = request.POST.get("answer")
-        question_id = request.POST.get("question_id")
-        user_answers = request.session.get("user_answers", {})
-        user_answers[question_id] = int(answer)
-        request.session["user_answers"] = user_answers
+     all_questions = get_dynamic_questions()
+     answers_vector = get_answers_vector(request)
+     safe_vector = [a if a is not None else -1 for a in answers_vector]
 
-        answers_vector = get_answers_vector(request)
-        selector = SimpleQuestionSelector()
-        next_q_idx = selector.predict_next_question(answers_vector)
-        all_questions = get_dynamic_questions()
-        next_question = all_questions[next_q_idx] if next_q_idx < len(all_questions) else {"text": "質問がありません"}
-        return render(request, "interface/question.html", {"question": next_question})
+     # --- ポケモン候補絞り込み ---
+     filtered_candidates = filter_candidates(answers_vector)
 
+     # --- 次の質問をAIで選ぶ ---
+     # モデルパスは「質問選択用」モデルにしてください
+     #MODEL_PATH = os.path.join(settings.BASE_DIR, "question_selector_model.keras")
+     selector = SimpleQuestionSelector()
+     next_q_index = selector.predict_next_question(safe_vector)
+     next_question = all_questions[next_q_index]
+
+     # --- テンプレートに両方渡す！ ---
+     return render(
+         request,
+        "interface/question.html",
+        {
+            "question": next_question,
+            "candidates": filtered_candidates,
+            "answers_vector": answers_vector,
+        }
+    )

@@ -9,11 +9,11 @@ class SimpleQuestionSelector:
             self.model = self._build_dummy_model()
     
     def _build_dummy_model(self):
-        # モデル（入力: 389次元、出力: 389次元の質問スコア）
+        # モデル（入力: 368次元、出力: 368次元の質問スコア）
         model = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=(389,)),
+            tf.keras.layers.InputLayer(input_shape=(368,)),
             tf.keras.layers.Dense(32, activation='relu'),
-            tf.keras.layers.Dense(389, activation='softmax')
+            tf.keras.layers.Dense(368, activation='softmax')
         ])
         model.compile(optimizer='adam', loss='categorical_crossentropy')
         return model

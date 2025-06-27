@@ -6,3 +6,4 @@ tzdata==2025.2
 pygame
 numpy
 tensorflow
+pandas

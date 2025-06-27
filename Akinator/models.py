@@ -21,3 +21,4 @@ class Pokemon(models.Model):
     initial = models.CharField(max_length=1, db_column="頭文字")
     class Meta:
         db_table = "pokemons"
+        app_label = 'Akinator'
