@@ -19,7 +19,7 @@
             top: 30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 4em; /* サイズUP */
+            font-size: 4em;
             color: #000;
             font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
             text-shadow: 0 2px 12px #fff, 0 1px 2px #aaa;
@@ -39,11 +39,11 @@
             min-height: 200px;
             display: flex;
             align-items: center;
-            padding: 40px 80px; /* パネル自体も大きく */
-            gap: 50px; /* 余白を増やす */
+            padding: 40px 80px;
+            gap: 50px;
         }
         .poke-img {
-            width: 250px;  /* 画像サイズ大幅UP */
+            width: 250px;
             height: 250px;
             object-fit: contain;
         }
@@ -51,7 +51,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            font-size: 2em; /* 情報も大きく */
+            font-size: 2em;
             gap: 16px;
         }
         .poke-info .number {
@@ -79,10 +79,10 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 100px; /* ボタン同士の間隔も広く */
+            gap: 100px;
         }
         .result-btn {
-            font-size: 2.8em; /* ボタン文字も大きく */
+            font-size: 2.8em;
             padding: 24px 80px;
             background: white;
             border: 5px solid #333;
@@ -128,44 +128,236 @@
 <body>
     <div class="congrats">Congratulations!!</div>
     <div class="result-box">
-        <img class="poke-img" src="pupurin.png" alt="ププリン">
+        <img class="poke-img" id="pokeImg" src="" alt="ポケモン画像">
         <div class="poke-info">
-            <div class="number">No.0174</div>
-            <div class="name">ププリン</div>
-            <div class="genders">
+            <div class="number" id="pokeNumber">No.</div>
+            <div class="name" id="pokeName">ポケモン名</div>
+            <div class="genders" id="pokeGenders">
                 <span class="male">♂</span>
                 <span class="female">♀</span>
             </div>
         </div>
     </div>
     <div class="button-area">
-        <button class="result-btn">もう一度</button>
-        <button class="result-btn">やめる</button>
-        <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
-        <script>
-            //音声の再生
-            document.getElementById("audio").play();
-
-            //音声の一時停止
-            document.getElementById("audio").pause();
-
-
-            $(function () {
-            var audioBtn = $(".audio_button"),
-                audioWrap = $(".audio_wrap"),
-                audio = document.getElementById("audio");
-
-            audioBtn.on("click", function () {
-                if (audioWrap.hasClass("play")) {
-                audio.pause();
-                audioWrap.removeClass("play");
-                } else {
-                audio.play();
-                audioWrap.addClass("play");
-                }
-            });
-            });
-        </script>
+        <button class="result-btn" onclick="location.reload()">もう一度</button>
+        <button class="result-btn" onclick="window.close()">やめる</button>
     </div>
+    <audio id="bgAudio" src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
+    <script>
+        // POSTでポケモン名（ローマ字）が送られた場合の処理
+        // 例: fetchやformでPOST送信後にこのページに遷移し、bodyに{name: "pikachu"}などが含まれる
+
+        // ポストデータを取得する関数（fetchでデータを受け取る場合）
+        async function getPokemonNameFromPost() {
+            // サーバーサイドでリダイレクト時にwindow.nameやsessionStorage/localStorageなどに値を入れておく方法もあるが、
+            // ここでは fetch で /result などにPOSTしてページ遷移後に受け取る例を想定
+            // フロントエンド単体ではPOST bodyは直接取得できないため、FormData + sessionStorage で受け渡しが安全です
+            // ここではsessionStorageの例
+            const pokemonName = sessionStorage.getItem('pokemonName');
+            return pokemonName || 'dragonair'; // デフォルト: ププリン
+        }
+
+// ポケモンNo.1～151 各英語名 → 和名・図鑑番号・性別情報（♂♀両方にしています）
+// 必要に応じて性別情報や和名を修正できます
+const pokeTable = {
+    "bulbasaur":      {number: "No.0001", name: "フシギダネ", genders: {male: true, female: true}},
+    "ivysaur":        {number: "No.0002", name: "フシギソウ", genders: {male: true, female: true}},
+    "venusaur":       {number: "No.0003", name: "フシギバナ", genders: {male: true, female: true}},
+    "charmander":     {number: "No.0004", name: "ヒトカゲ", genders: {male: true, female: true}},
+    "charmeleon":     {number: "No.0005", name: "リザード", genders: {male: true, female: true}},
+    "charizard":      {number: "No.0006", name: "リザードン", genders: {male: true, female: true}},
+    "squirtle":       {number: "No.0007", name: "ゼニガメ", genders: {male: true, female: true}},
+    "wartortle":      {number: "No.0008", name: "カメール", genders: {male: true, female: true}},
+    "blastoise":      {number: "No.0009", name: "カメックス", genders: {male: true, female: true}},
+    "caterpie":       {number: "No.0010", name: "キャタピー", genders: {male: true, female: true}},
+    "metapod":        {number: "No.0011", name: "トランセル", genders: {male: true, female: true}},
+    "butterfree":     {number: "No.0012", name: "バタフリー", genders: {male: true, female: true}},
+    "weedle":         {number: "No.0013", name: "ビードル", genders: {male: true, female: true}},
+    "kakuna":         {number: "No.0014", name: "コクーン", genders: {male: true, female: true}},
+    "beedrill":       {number: "No.0015", name: "スピアー", genders: {male: true, female: true}},
+    "pidgey":         {number: "No.0016", name: "ポッポ", genders: {male: true, female: true}},
+    "pidgeotto":      {number: "No.0017", name: "ピジョン", genders: {male: true, female: true}},
+    "pidgeot":        {number: "No.0018", name: "ピジョット", genders: {male: true, female: true}},
+    "rattata":        {number: "No.0019", name: "コラッタ", genders: {male: true, female: true}},
+    "raticate":       {number: "No.0020", name: "ラッタ", genders: {male: true, female: true}},
+    "spearow":        {number: "No.0021", name: "オニスズメ", genders: {male: true, female: true}},
+    "fearow":         {number: "No.0022", name: "オニドリル", genders: {male: true, female: true}},
+    "ekans":          {number: "No.0023", name: "アーボ", genders: {male: true, female: true}},
+    "arbok":          {number: "No.0024", name: "アーボック", genders: {male: true, female: true}},
+    "pikachu":        {number: "No.0025", name: "ピカチュウ", genders: {male: true, female: true}},
+    "raichu":         {number: "No.0026", name: "ライチュウ", genders: {male: true, female: true}},
+    "sandshrew":      {number: "No.0027", name: "サンド", genders: {male: true, female: true}},
+    "sandslash":      {number: "No.0028", name: "サンドパン", genders: {male: true, female: true}},
+    "nidoran-f":      {number: "No.0029", name: "ニドラン♀", genders: {male: false, female: true}},
+    "nidorina":       {number: "No.0030", name: "ニドリーナ", genders: {male: false, female: true}},
+    "nidoqueen":      {number: "No.0031", name: "ニドクイン", genders: {male: false, female: true}},
+    "nidoran-m":      {number: "No.0032", name: "ニドラン♂", genders: {male: true, female: false}},
+    "nidorino":       {number: "No.0033", name: "ニドリーノ", genders: {male: true, female: false}},
+    "nidoking":       {number: "No.0034", name: "ニドキング", genders: {male: true, female: false}},
+    "clefairy":       {number: "No.0035", name: "ピッピ", genders: {male: true, female: true}},
+    "clefable":       {number: "No.0036", name: "ピクシー", genders: {male: true, female: true}},
+    "vulpix":         {number: "No.0037", name: "ロコン", genders: {male: true, female: true}},
+    "ninetales":      {number: "No.0038", name: "キュウコン", genders: {male: true, female: true}},
+    "jigglypuff":     {number: "No.0039", name: "プリン", genders: {male: true, female: true}},
+    "wigglytuff":     {number: "No.0040", name: "プクリン", genders: {male: true, female: true}},
+    "zubat":          {number: "No.0041", name: "ズバット", genders: {male: true, female: true}},
+    "golbat":         {number: "No.0042", name: "ゴルバット", genders: {male: true, female: true}},
+    "oddish":         {number: "No.0043", name: "ナゾノクサ", genders: {male: true, female: true}},
+    "gloom":          {number: "No.0044", name: "クサイハナ", genders: {male: true, female: true}},
+    "vileplume":      {number: "No.0045", name: "ラフレシア", genders: {male: true, female: true}},
+    "paras":          {number: "No.0046", name: "パラス", genders: {male: true, female: true}},
+    "parasect":       {number: "No.0047", name: "パラセクト", genders: {male: true, female: true}},
+    "venonat":        {number: "No.0048", name: "コンパン", genders: {male: true, female: true}},
+    "venomoth":       {number: "No.0049", name: "モルフォン", genders: {male: true, female: true}},
+    "diglett":        {number: "No.0050", name: "ディグダ", genders: {male: true, female: true}},
+    "dugtrio":        {number: "No.0051", name: "ダグトリオ", genders: {male: true, female: true}},
+    "meowth":         {number: "No.0052", name: "ニャース", genders: {male: true, female: true}},
+    "persian":        {number: "No.0053", name: "ペルシアン", genders: {male: true, female: true}},
+    "psyduck":        {number: "No.0054", name: "コダック", genders: {male: true, female: true}},
+    "golduck":        {number: "No.0055", name: "ゴルダック", genders: {male: true, female: true}},
+    "mankey":         {number: "No.0056", name: "マンキー", genders: {male: true, female: true}},
+    "primeape":       {number: "No.0057", name: "オコリザル", genders: {male: true, female: true}},
+    "growlithe":      {number: "No.0058", name: "ガーディ", genders: {male: true, female: true}},
+    "arcanine":       {number: "No.0059", name: "ウインディ", genders: {male: true, female: true}},
+    "poliwag":        {number: "No.0060", name: "ニョロモ", genders: {male: true, female: true}},
+    "poliwhirl":      {number: "No.0061", name: "ニョロゾ", genders: {male: true, female: true}},
+    "poliwrath":      {number: "No.0062", name: "ニョロボン", genders: {male: true, female: true}},
+    "abra":           {number: "No.0063", name: "ケーシィ", genders: {male: true, female: true}},
+    "kadabra":        {number: "No.0064", name: "ユンゲラー", genders: {male: true, female: true}},
+    "alakazam":       {number: "No.0065", name: "フーディン", genders: {male: true, female: true}},
+    "machop":         {number: "No.0066", name: "ワンリキー", genders: {male: true, female: true}},
+    "machoke":        {number: "No.0067", name: "ゴーリキー", genders: {male: true, female: true}},
+    "machamp":        {number: "No.0068", name: "カイリキー", genders: {male: true, female: true}},
+    "bellsprout":     {number: "No.0069", name: "マダツボミ", genders: {male: true, female: true}},
+    "weepinbell":     {number: "No.0070", name: "ウツドン", genders: {male: true, female: true}},
+    "victreebel":     {number: "No.0071", name: "ウツボット", genders: {male: true, female: true}},
+    "tentacool":      {number: "No.0072", name: "メノクラゲ", genders: {male: true, female: true}},
+    "tentacruel":     {number: "No.0073", name: "ドククラゲ", genders: {male: true, female: true}},
+    "geodude":        {number: "No.0074", name: "イシツブテ", genders: {male: true, female: true}},
+    "graveler":       {number: "No.0075", name: "ゴローン", genders: {male: true, female: true}},
+    "golem":          {number: "No.0076", name: "ゴローニャ", genders: {male: true, female: true}},
+    "ponyta":         {number: "No.0077", name: "ポニータ", genders: {male: true, female: true}},
+    "rapidash":       {number: "No.0078", name: "ギャロップ", genders: {male: true, female: true}},
+    "slowpoke":       {number: "No.0079", name: "ヤドン", genders: {male: true, female: true}},
+    "slowbro":        {number: "No.0080", name: "ヤドラン", genders: {male: true, female: true}},
+    "magnemite":      {number: "No.0081", name: "コイル", genders: {male: false, female: false}},
+    "magneton":       {number: "No.0082", name: "レアコイル", genders: {male: false, female: false}},
+    "farfetchd":      {number: "No.0083", name: "カモネギ", genders: {male: true, female: true}},
+    "doduo":          {number: "No.0084", name: "ドードー", genders: {male: true, female: true}},
+    "dodrio":         {number: "No.0085", name: "ドードリオ", genders: {male: true, female: true}},
+    "seel":           {number: "No.0086", name: "パウワウ", genders: {male: true, female: true}},
+    "dewgong":        {number: "No.0087", name: "ジュゴン", genders: {male: true, female: true}},
+    "grimer":         {number: "No.0088", name: "ベトベター", genders: {male: true, female: true}},
+    "muk":            {number: "No.0089", name: "ベトベトン", genders: {male: true, female: true}},
+    "shellder":       {number: "No.0090", name: "シェルダー", genders: {male: true, female: true}},
+    "cloyster":       {number: "No.0091", name: "パルシェン", genders: {male: true, female: true}},
+    "gastly":         {number: "No.0092", name: "ゴース", genders: {male: true, female: true}},
+    "haunter":        {number: "No.0093", name: "ゴースト", genders: {male: true, female: true}},
+    "gengar":         {number: "No.0094", name: "ゲンガー", genders: {male: true, female: true}},
+    "onix":           {number: "No.0095", name: "イワーク", genders: {male: true, female: true}},
+    "drowzee":        {number: "No.0096", name: "スリープ", genders: {male: true, female: true}},
+    "hypno":          {number: "No.0097", name: "スリーパー", genders: {male: true, female: true}},
+    "krabby":         {number: "No.0098", name: "クラブ", genders: {male: true, female: true}},
+    "kingler":        {number: "No.0099", name: "キングラー", genders: {male: true, female: true}},
+    "voltorb":        {number: "No.0100", name: "ビリリダマ", genders: {male: false, female: false}},
+    "electrode":      {number: "No.0101", name: "マルマイン", genders: {male: false, female: false}},
+    "exeggcute":      {number: "No.0102", name: "タマタマ", genders: {male: true, female: true}},
+    "exeggutor":      {number: "No.0103", name: "ナッシー", genders: {male: true, female: true}},
+    "cubone":         {number: "No.0104", name: "カラカラ", genders: {male: true, female: true}},
+    "marowak":        {number: "No.0105", name: "ガラガラ", genders: {male: true, female: true}},
+    "hitmonlee":      {number: "No.0106", name: "サワムラー", genders: {male: true, female: false}},
+    "hitmonchan":     {number: "No.0107", name: "エビワラー", genders: {male: true, female: false}},
+    "lickitung":      {number: "No.0108", name: "ベロリンガ", genders: {male: true, female: true}},
+    "koffing":        {number: "No.0109", name: "ドガース", genders: {male: true, female: true}},
+    "weezing":        {number: "No.0110", name: "マタドガス", genders: {male: true, female: true}},
+    "rhyhorn":        {number: "No.0111", name: "サイホーン", genders: {male: true, female: true}},
+    "rhydon":         {number: "No.0112", name: "サイドン", genders: {male: true, female: true}},
+    "chansey":        {number: "No.0113", name: "ラッキー", genders: {male: false, female: true}},
+    "tangela":        {number: "No.0114", name: "モンジャラ", genders: {male: true, female: true}},
+    "kangaskhan":     {number: "No.0115", name: "ガルーラ", genders: {male: false, female: true}},
+    "horsea":         {number: "No.0116", name: "タッツー", genders: {male: true, female: true}},
+    "seadra":         {number: "No.0117", name: "シードラ", genders: {male: true, female: true}},
+    "goldeen":        {number: "No.0118", name: "トサキント", genders: {male: true, female: true}},
+    "seaking":        {number: "No.0119", name: "アズマオウ", genders: {male: true, female: true}},
+    "staryu":         {number: "No.0120", name: "ヒトデマン", genders: {male: false, female: false}},
+    "starmie":        {number: "No.0121", name: "スターミー", genders: {male: false, female: false}},
+    "mr-mime":        {number: "No.0122", name: "バリヤード", genders: {male: true, female: true}},
+    "scyther":        {number: "No.0123", name: "ストライク", genders: {male: true, female: true}},
+    "jynx":           {number: "No.0124", name: "ルージュラ", genders: {male: false, female: true}},
+    "electabuzz":     {number: "No.0125", name: "エレブー", genders: {male: true, female: true}},
+    "magmar":         {number: "No.0126", name: "ブーバー", genders: {male: true, female: true}},
+    "pinsir":         {number: "No.0127", name: "カイロス", genders: {male: true, female: true}},
+    "tauros":         {number: "No.0128", name: "ケンタロス", genders: {male: true, female: false}},
+    "magikarp":       {number: "No.0129", name: "コイキング", genders: {male: true, female: true}},
+    "gyarados":       {number: "No.0130", name: "ギャラドス", genders: {male: true, female: true}},
+    "lapras":         {number: "No.0131", name: "ラプラス", genders: {male: true, female: true}},
+    "ditto":          {number: "No.0132", name: "メタモン", genders: {male: false, female: false}},
+    "eevee":          {number: "No.0133", name: "イーブイ", genders: {male: true, female: true}},
+    "vaporeon":       {number: "No.0134", name: "シャワーズ", genders: {male: true, female: true}},
+    "jolteon":        {number: "No.0135", name: "サンダース", genders: {male: true, female: true}},
+    "flareon":        {number: "No.0136", name: "ブースター", genders: {male: true, female: true}},
+    "porygon":        {number: "No.0137", name: "ポリゴン", genders: {male: false, female: false}},
+    "omanyte":        {number: "No.0138", name: "オムナイト", genders: {male: true, female: true}},
+    "omastar":        {number: "No.0139", name: "オムスター", genders: {male: true, female: true}},
+    "kabuto":         {number: "No.0140", name: "カブト", genders: {male: true, female: true}},
+    "kabutops":       {number: "No.0141", name: "カブトプス", genders: {male: true, female: true}},
+    "aerodactyl":     {number: "No.0142", name: "プテラ", genders: {male: true, female: true}},
+    "snorlax":        {number: "No.0143", name: "カビゴン", genders: {male: true, female: true}},
+    "articuno":       {number: "No.0144", name: "フリーザー", genders: {male: false, female: false}},
+    "zapdos":         {number: "No.0145", name: "サンダー", genders: {male: false, female: false}},
+    "moltres":        {number: "No.0146", name: "ファイヤー", genders: {male: false, female: false}},
+    "dratini":        {number: "No.0147", name: "ミニリュウ", genders: {male: true, female: true}},
+    "dragonair":      {number: "No.0148", name: "ハクリュー", genders: {male: true, female: true}},
+    "dragonite":      {number: "No.0149", name: "カイリュー", genders: {male: true, female: true}},
+    "mewtwo":         {number: "No.0150", name: "ミュウツー", genders: {male: false, female: false}},
+    "mew":            {number: "No.0151", name: "ミュウ", genders: {male: false, female: false}}
+};
+            // 必要な分だけ追加
+        
+
+        (async function() {
+            const pokemonName = await getPokemonNameFromPost();
+
+            // URLを書き換え（クエリパラメータとして反映・リロードしない）
+            if (!location.search.includes('name=' + pokemonName)) {
+                const url = new URL(location);
+                url.searchParams.set('name', pokemonName);
+                window.history.replaceState(null, '', url);
+            }
+
+            // PokeAPIからデータ取得
+            fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+                .then(response => response.json())
+                .then(data => {
+                    const imgUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default || '';
+                    document.getElementById('pokeImg').src = imgUrl;
+
+                    // 図鑑番号・和名
+                    let info = pokeTable[pokemonName];
+                    if (!info) {
+                        // なければAPIの番号・英名
+                        info = {
+                            number: 'No.' + String(data.id).padStart(4, '0'),
+                            name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
+                            genders: {male: true, female: true}
+                        }
+                    }
+                    document.getElementById('pokeNumber').textContent = info.number;
+                    document.getElementById('pokeName').textContent = info.name;
+
+                    // 性別表示
+                    let genderHtml = '';
+                    if (info.genders.male)   genderHtml += '<span class="male">♂</span>';
+                    if (info.genders.female) genderHtml += '<span class="female">♀</span>';
+                    document.getElementById('pokeGenders').innerHTML = genderHtml;
+                })
+                .catch(() => {
+                    document.getElementById('pokeImg').alt = "画像が取得できません";
+                    document.getElementById('pokeNumber').textContent = '-';
+                    document.getElementById('pokeName').textContent = pokemonName;
+                    document.getElementById('pokeGenders').textContent = '';
+                });
+        })();
+    </script>
 </body>
 </html>
