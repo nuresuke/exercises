@@ -7,9 +7,24 @@ from .tf_model import SimpleQuestionSelector
 from .utils import *
 import tensorflow as tf
 import numpy as np
+import pickle
 
-# Create your views here.
+def load_ai_model_data():
+    with open('question_list.pkl', 'rb') as f:
+        question_list = pickle.load(f)
+    with open('pokemon_list.pkl', 'rb') as f:
+        pokemon_list = pickle.load(f)
+    with open('candidate_features.pkl', 'rb') as f:
+        candidate_features = pickle.load(f)
+        
+    # ここでprintしてみる
+    print("question_list[0]", question_list[0])
+    print("pokemon_list[0]", pokemon_list[0])
+    print("features[0]", candidate_features[0])
+
 def index_view(request):
+    request.session["user_answers"] = {}
+    request.session.modified = True
     return render(request, "interface/index.html")
 
 def preparation_view(request):
@@ -18,105 +33,115 @@ def preparation_view(request):
 def explanation_view(request):
     return render(request, "interface/explanation.html")
 
+import os
+from django.shortcuts import render
+from django.conf import settings
+import pickle
+import numpy as np
+import tensorflow as tf
 
-#DjangoでDBからポケモン情報を取得し、TensorFlowモデルで条件を満たすポケモンだけ絞り込む基本構造
-def filter_candidates(answers_vector):
-    pokemons = Pokemon.objects.all()
-    skill_list = sorted(list(Pokemon.objects.exclude(has_special_skill='').values_list('has_special_skill', flat=True).distinct()))
-    avil_list = sorted(list(Pokemon.objects.exclude(characteristic='').values_list('characteristic', flat=True).distinct()))
-    features = []
-    valid_pokemons = []
-    for p in pokemons:
-        feature = []
-        feature.extend(one_hot_encode_type(p.type))
-        feature.extend(one_hot_encode_color(p.color))
-        feature.extend(one_hot_encode_skill(p.has_special_skill, skill_list))
-        feature.extend(one_hot_encode_avility(p.characteristic, avil_list))
-        feature.extend([
-            p.weight,
-            p.height,
-            float(p.evolution),
-            int(p.can_fly),
-            int(p.is_legendary),
-            int(p.is_fossil),
-            int(p.has_sash),
-        ])
-        compare_values = [
-            p.type,             # 0: type
-            p.color,            # 1: color
-            p.has_special_skill,# 2: skill
-            p.characteristic,   # 3: avility
-            p.weight,           # 4: weight
-            p.height,           # 5: height
-            p.evolution,        # 6: evolution
-            int(p.can_fly),     # 7: can_fly
-            int(p.is_legendary),# 8: is_legendary
-            int(p.is_fossil),   # 9: is_fossil
-            int(p.has_sash),    # 10: has_sash
-        ]
-        is_candidate = True
-        for i, ans in enumerate(answers_vector):
-            if ans is None:
-                continue
-            print(f"compare_values[{i}]:", compare_values[i], type(compare_values[i]))
-            print(f"ans[{i}]:", ans, type(ans))
-            if str(compare_values[i]) != str(ans):
-                is_candidate = False
-                break
-        if is_candidate:
-            features.append(feature)
-            valid_pokemons.append(p)
-
-    if not features:
-        return []
-
-    features = np.array(features)
-    MODEL_PATH = os.path.join(settings.BASE_DIR, "pokemon_filter_model.keras")
+def load_ai_model_data():
+    with open('question_list.pkl', 'rb') as f:
+        question_list = pickle.load(f)
+    with open('pokemon_list.pkl', 'rb') as f:
+        pokemon_list = pickle.load(f)
+    with open('candidate_features.pkl', 'rb') as f:
+        candidate_features = pickle.load(f)
+    MODEL_PATH = os.path.join(settings.BASE_DIR, "question_selector_model.keras")
     model = tf.keras.models.load_model(MODEL_PATH)
-    preds = model.predict(features)
-    print("preds shape:", preds.shape)
-    print("pred example:", preds[0])
-    threshold = 0.95
-    filtered_pokemons = [
-    p for i, p in enumerate(valid_pokemons)
-    if preds[i][i] > threshold
-    ]
-    return filtered_pokemons
+    return {
+        'questions': question_list,
+        'pokemons': pokemon_list,
+        'features': candidate_features,
+        'model': model,
+    }
 
-def get_answers_vector(request):
-    """
-    質問リストとユーザー回答履歴（セッション）からanswers_vectorを作成
-    """
-    all_questions = get_dynamic_questions()
+def get_answers_vector(request, questions):
     user_answers = request.session.get("user_answers", {})
     answers_vector = []
-    for q in all_questions:
-        qid = q.get("id") or q.get("text")
+    for q in questions:
+        qid = q.get("id")
         answer = user_answers.get(str(qid))
-        if answer is None:
-            answers_vector.append(None)
-        else:
-            answers_vector.append(answer)
+        answers_vector.append(-1 if answer is None else answer)
+    print("answers_vector:", answers_vector)
     return answers_vector
 
+def filter_candidates_by_ai_answers(answers_vector, ai_data):
+    candidate_features = ai_data['features']
+    pokemon_list = ai_data['pokemons']
+    filtered_candidates = []
+    debug_info = []
+    for i, pokemon in enumerate(pokemon_list):
+        is_valid = True
+        for q_idx, answer in enumerate(answers_vector):
+            if answer == -1:
+                continue
+            feature_val = candidate_features[i][q_idx]
+            if feature_val == -1:
+                continue
+            if int(feature_val) != int(answer):
+                is_valid = False
+                debug_info.append(
+                    f"{pokemon['name']} 除外: 質問{q_idx} answer={answer}, feature_val={feature_val}"
+                )
+                break
+        if is_valid:
+            filtered_candidates.append(pokemon)
+    print(f"候補: {len(filtered_candidates)}/{len(pokemon_list)}")
+    print("\n".join(debug_info[:50]))  # 最初の50件だけ
+    return filtered_candidates
+
+def select_next_question_ai(answers_vector, ai_data):
+    model = ai_data['model']
+    num_questions = len(ai_data['questions'])
+    X_input = np.array([answers_vector + [-1]*(num_questions-len(answers_vector))]) + 1
+    predictions = model.predict(X_input, verbose=0)
+    sorted_indices = np.argsort(predictions[0])[::-1]
+    for idx in sorted_indices:
+        if answers_vector[idx] == -1:
+            return idx
+    return None
+
 def question_view(request):
-     all_questions = get_dynamic_questions()
-     answers_vector = get_answers_vector(request)
-     safe_vector = [a if a is not None else -1 for a in answers_vector]
+    ai_data = load_ai_model_data()
+    questions = ai_data['questions']
 
-     # --- ポケモン候補絞り込み ---
-     filtered_candidates = filter_candidates(answers_vector)
+    if request.method == "POST":
+        qid = request.POST.get("question_id")
+        answer = request.POST.get("answer")
+        if qid is not None:
+            user_answers = request.session.get("user_answers", {})
+            user_answers[str(qid)] = int(answer)
+            request.session["user_answers"] = user_answers
+            request.session.modified = True
 
-     # --- 次の質問をAIで選ぶ ---
-     # モデルパスは「質問選択用」モデルにしてください
-     #MODEL_PATH = os.path.join(settings.BASE_DIR, "question_selector_model.keras")
-     selector = SimpleQuestionSelector()
-     next_q_index = selector.predict_next_question(safe_vector)
-     next_question = all_questions[next_q_index]
+    answers_vector = get_answers_vector(request, questions)
+    filtered_candidates = filter_candidates_by_ai_answers(answers_vector, ai_data)
+    print(f"候補数: {len(filtered_candidates)}")
 
-     # --- テンプレートに両方渡す！ ---
-     return render(
-         request,
+    next_q_index = select_next_question_ai(answers_vector, ai_data)
+    if next_q_index is None:
+        for i, ans in enumerate(answers_vector):
+            if ans == -1:
+                next_q_index = i
+                break
+
+    if next_q_index is not None and 0 <= next_q_index < len(questions):
+        next_question = questions[next_q_index]
+    else:
+        return render(request, "interface/result.html", {
+            "candidates": filtered_candidates,
+            "message": "全ての質問に回答しました"
+        })
+
+    if len(filtered_candidates) <= 1:
+        return render(request, "interface/result.html", {
+            "candidates": filtered_candidates,
+            "confidence": 1.0 if filtered_candidates else 0.0
+        })
+
+    return render(
+        request,
         "interface/question.html",
         {
             "question": next_question,

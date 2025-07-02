@@ -22,3 +22,23 @@ class Pokemon(models.Model):
     class Meta:
         db_table = "pokemons"
         app_label = 'Akinator'
+    
+    def to_dict(self):
+        return {
+            "zukan_no": self.zukan_no,
+            "name": self.name,
+            "type": self.type,
+            "color": self.color,
+            "weight": self.weight,
+            "height": self.height,
+            "evolution": self.evolution,
+            "can_fly": self.can_fly,
+            "habitat": self.habitat,
+            "is_legendary": self.is_legendary,
+            "feature": self.feature,
+            "is_fossil": self.is_fossil,
+            "has_special_skill": self.has_special_skill,
+            "has_sash": self.has_sash,
+            "characteristic": self.characteristic,
+            "initial": self.initial,
+        }
