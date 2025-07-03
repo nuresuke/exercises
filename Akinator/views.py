@@ -31,6 +31,11 @@ def index_view(request):
     request.session.modified = True
     return render(request, "interface/index.html")
 
+def prediction_view(request):
+    request.session["user_answers"] = {}
+    request.session.modified = True
+    return render(request, "interface/prediction.html")
+
 def preparation_view(request):
     return render(request, "interface/preparation.html")
 
