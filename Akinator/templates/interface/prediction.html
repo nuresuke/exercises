@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -8,7 +9,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: url('gras2.jpg') no-repeat center center fixed;
+            background: url("{% static 'interface/images/gras2.jpg' %}") no-repeat center center fixed;
             background-size: cover;
             width: 100vw;
             height: 100vh;
@@ -99,21 +100,30 @@
             }
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
     <div class="dialog">あなたが思い浮かべているのは〇〇〇ですか？</div>
-    <img src="purin.png" alt="プリン" class="jigglypuff">
+    <img class="poke-img" id="pokeImg" src="" alt="ポケモン画像">
     <div class="button-area">
         <button class="answer-btn">そうです</button>
         <button class="answer-btn">違います</button>
         <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
         <script>
-            //音声の再生
-            document.getElementById("audio").play();
+            // POSTでポケモン名（ローマ字）が送られた場合の処理
+            // 例: fetchやformでPOST送信後にこのページに遷移し、bodyに{name: "pikachu"}などが含まれる
 
-            //音声の一時停止
-            document.getElementById("audio").pause();
+            // ポストデータを取得する関数（fetchでデータを受け取る場合）
+            async function getPokemonNameFromPost() {
+            // サーバーサイドでリダイレクト時にwindow.nameやsessionStorage/localStorageなどに値を入れておく方法もあるが、
+            // ここでは fetch で /result などにPOSTしてページ遷移後に受け取る例を想定
+            // フロントエンド単体ではPOST bodyは直接取得できないため、FormData + sessionStorage で受け渡しが安全です
+            // ここではsessionStorageの例
+            const pokemonName = "{{ poke_en_name }}";
+            return pokemonName || 'dragonair'; // デフォルト: ププリン
+            }
 
+            const pokeTable = JSON.parse('{{ poke_table_json|escapejs }}');
 
             $(function () {
             var audioBtn = $(".audio_button"),
@@ -130,6 +140,45 @@
                 }
             });
             });
+
+            (async function() {
+            const pokemonName = await getPokemonNameFromPost();
+
+            // URLを書き換え（クエリパラメータとして反映・リロードしない）
+            if (!location.search.includes('name=' + pokemonName)) {
+                const url = new URL(location);
+                url.searchParams.set('name', pokemonName);
+                window.history.replaceState(null, '', url);
+            }
+
+            // PokeAPIからデータ取得
+            fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+                .then(response => response.json())
+                .then(data => {
+                    const imgUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default || '';
+                    document.getElementById('pokeImg').src = imgUrl;
+
+                    // 図鑑番号・和名
+                    let info = pokeTable[pokemonName];
+                    if (!info) {
+                        // なければAPIの番号・英名
+                        info = {
+                            number: 'No.' + String(data.id).padStart(4, '0'),
+                            name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
+                            genders: {male: true, female: true}
+                        }
+                    }
+                    document.getElementById('pokeNumber').textContent = info.number;
+                    document.getElementById('pokeName').textContent = info.name;
+
+                })
+                .catch(() => {
+                    document.getElementById('pokeImg').alt = "画像が取得できません";
+                    document.getElementById('pokeNumber').textContent = '-';
+                    document.getElementById('pokeName').textContent = pokemonName;
+                    document.getElementById('pokeGenders').textContent = '';
+                });
+        })();
         </script>
     </div>
 </body>

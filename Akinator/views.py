@@ -1,3 +1,4 @@
+import json
 import os
 from django.shortcuts import render
 from Akinator.management.commands.generate_question import get_dynamic_questions
@@ -8,6 +9,9 @@ from .utils import *
 import tensorflow as tf
 import numpy as np
 import pickle
+
+with open("pokemon_jp_to_en.json", encoding="utf-8") as f:
+        JP_TO_EN = json.load(f)
 
 def load_ai_model_data():
     with open('question_list.pkl', 'rb') as f:
@@ -56,6 +60,19 @@ def load_ai_model_data():
         'model': model,
     }
 
+def get_poke_table():
+    poke_table = {}
+    for p in Pokemon.objects.all():
+        en_name = JP_TO_EN.get(p.name)
+        if not en_name:
+            continue  # 変換できない場合はスキップ
+        poke_table[en_name] = {
+            "number": f"No.{p.zukan_no:04d}",
+            "name": p.name
+        }
+    return poke_table
+
+
 def get_answers_vector(request, questions):
     user_answers = request.session.get("user_answers", {})
     answers_vector = []
@@ -88,7 +105,8 @@ def filter_candidates_by_ai_answers(answers_vector, ai_data):
         if is_valid:
             filtered_candidates.append(pokemon)
     print(f"候補: {len(filtered_candidates)}/{len(pokemon_list)}")
-    print("\n".join(debug_info[:50]))  # 最初の50件だけ
+    print("\n".join(debug_info[:151]))  # 最初の50件だけ
+    print(filtered_candidates)
     return filtered_candidates
 
 def select_next_question_ai(answers_vector, ai_data):
@@ -135,9 +153,17 @@ def question_view(request):
         })
 
     if len(filtered_candidates) <= 1:
-        return render(request, "interface/result.html", {
-            "candidates": filtered_candidates,
-            "confidence": 1.0 if filtered_candidates else 0.0
+        poke_table = get_poke_table()
+        poke_table_json = json.dumps(poke_table, ensure_ascii=False)
+        # 候補が存在する場合、その名前を取得
+        poke_name = filtered_candidates[0]['name'] if filtered_candidates else None
+        # 英語名も渡したい場合（例: 'en_name'キーがあれば）
+        poke_en_name = JP_TO_EN.get(poke_name) if poke_name else None
+        return render(request, "interface/prediction.html", {
+        "candidates": filtered_candidates,
+        "confidence": 1.0 if filtered_candidates else 0.0,
+        "poke_en_name": poke_en_name,
+        "poke_table_json": poke_table_json
         })
 
     return render(
