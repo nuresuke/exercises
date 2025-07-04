@@ -103,7 +103,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
-    <div class="dialog">あなたが思い浮かべているのは〇〇〇ですか？</div>
+    <div class="dialog">あなたが思い浮かべているのは{{poke_jp_name}}ですか？</div>
     <img class="poke-img" id="pokeImg" src="" alt="ポケモン画像">
     <div class="button-area">
         <button class="answer-btn">そうです</button>
@@ -120,6 +120,7 @@
             // フロントエンド単体ではPOST bodyは直接取得できないため、FormData + sessionStorage で受け渡しが安全です
             // ここではsessionStorageの例
             const pokemonName = "{{ poke_en_name }}";
+            window.location.href = "{% url 'result_page' %}?name=" + encodeURIComponent(pokemonName);
             return pokemonName || 'dragonair'; // デフォルト: ププリン
             }
 

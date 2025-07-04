@@ -53,6 +53,7 @@ def make_pokemon_list_and_categorical_values():
     # 必要なら.filter(zukan_no__gte=1, zukan_no__lte=151) でカントー限定も可
     for p in Pokemon.objects.all():
         poke = {
+            "name":p.name,
             "type": split_types(p.type),
             "color": p.color,
             "habitat": p.habitat,
@@ -89,7 +90,7 @@ def generate_candidate_features(pokemon_list, question_list):
             val = q["value"]
             poke_val = poke.get(key)
             # 属性の種類ごとに判定する
-            if key in ["type", "color", "has_special_skill", "characteristic"]:
+            if key in ["type", "color", "has_special_skill", "characteristic", "feature", "habitat", "initial"]:
                 if isinstance(poke_val, list):
                     poke_feat.append(1 if val in poke_val else 0)
                 else:

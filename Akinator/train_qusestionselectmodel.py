@@ -44,9 +44,37 @@ def calculate_information_gain(sample, question_idx, candidates, candidate_featu
         gains.append(reduction_ratio)
     return np.mean(gains) if gains else 0.0
 
+def find_distinguishing_question_idx(sample, candidates, candidate_features):
+    """
+    候補が2体のときに、その2体を区別できる質問インデックスを返す
+    """
+    if len(candidates) != 2:
+        return None
+    idx1, idx2 = candidates
+    for qidx, ans in enumerate(sample):
+        if ans != -1:
+            continue
+        val1 = candidate_features[idx1][qidx]
+        val2 = candidate_features[idx2][qidx]
+        if (val1 == 1 and val2 == 0) or (val1 == 0 and val2 == 1):
+            return qidx
+    return None
+
+def find_unique_question_idx(sample, candidates, candidate_features):
+    """
+    候補が3〜5体のときに、1体だけYESで他はNOな質問インデックスを返す
+    """
+    for qidx, ans in enumerate(sample):
+        if ans != -1:
+            continue
+        yes_candidates = [idx for idx in candidates if candidate_features[idx][qidx] == 1]
+        if len(yes_candidates) == 1:
+            return qidx
+    return None
+
 # ============ main ===============
 
-num_samples = 1000  # お好みで増減
+num_samples = 1000  # 必要に応じて調整
 pokemon_list, categorical_values = make_pokemon_list_and_categorical_values()
 question_list = get_dynamic_questions()
 candidate_features, question_list = generate_candidate_features(pokemon_list, question_list)
@@ -71,11 +99,35 @@ for sample_idx in range(num_samples):
         choice = np.random.choice([-1, 0, 1], p=[0.7, 0.15, 0.15])
         sample.append(choice)
 
-    # 入力
-    X.append(sample.copy())
+    # 現在の候補を算出
+    candidates = filter_candidates_by_answers(sample, list(range(num_pokemons)), candidate_features)
 
-    # 各質問の情報ゲインを計算
-    candidates = list(range(num_pokemons))
+    # ========== 区別質問ロジック ==========
+
+    # 2体のときは区別質問
+    if len(candidates) == 2:
+        qidx = find_distinguishing_question_idx(sample, candidates, candidate_features)
+        question_scores = [0.0] * num_questions
+        if qidx is not None:
+            question_scores[qidx] = 1.0
+        else:
+            question_scores = [1.0 / num_questions] * num_questions
+        X.append(sample.copy())
+        y.append(question_scores)
+        continue
+
+    # 3〜5体のときはユニーク特徴を優先
+    if 2 < len(candidates) <= 5:
+        qidx = find_unique_question_idx(sample, candidates, candidate_features)
+        question_scores = [0.0] * num_questions
+        if qidx is not None:
+            question_scores[qidx] = 1.0
+            X.append(sample.copy())
+            y.append(question_scores)
+            continue
+        # ユニーク特徴がなければ情報ゲインでOK
+
+    # ========== 通常情報ゲインロジック ==========
     question_scores = []
     for question_idx in range(num_questions):
         if sample[question_idx] == -1:
@@ -83,14 +135,13 @@ for sample_idx in range(num_samples):
         else:
             score = 0.0
         question_scores.append(score)
-
-    # スコアの正規化
     max_score = max(question_scores) if max(question_scores) > 0 else 1
     if max_score > 0:
         question_scores = [score / max_score for score in question_scores]
     else:
         question_scores = [1.0 / num_questions] * num_questions
 
+    X.append(sample.copy())
     y.append(question_scores)
 
 X = np.array(X)
@@ -139,6 +190,6 @@ with open('question_list.pkl', 'wb') as f:
 with open('candidate_features.pkl', 'wb') as f:
     pickle.dump(candidate_features, f)
 with open('pokemon_list.pkl', 'wb') as f:
-    pickle.dump([p.to_dict() for p in pokemon_list], f)
+    pickle.dump(pokemon_list, f)
 
 print("すべてのデータファイルが正常に保存されました！")

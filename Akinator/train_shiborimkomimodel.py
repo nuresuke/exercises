@@ -12,10 +12,8 @@ import pickle
 from Akinator.utils import make_pokemon_list_and_categorical_values
 from management.commands.generate_question import get_dynamic_questions
 from management.commands.question_templates import *
-# from Akinator.views import *  # 不要
 
 def filter_candidates_by_answers(sample, candidates, candidate_features):
-    """回答に基づいて候補を絞り込む"""
     filtered_candidates = []
     for candidate_idx in candidates:
         is_valid = True
@@ -29,10 +27,47 @@ def filter_candidates_by_answers(sample, candidates, candidate_features):
             filtered_candidates.append(candidate_idx)
     return filtered_candidates
 
+def find_distinguishing_question_idx(sample, candidates, candidate_features):
+    """候補が2体のとき、その2体を区別できる質問インデックスを返す"""
+    if len(candidates) != 2:
+        return None
+    idx1, idx2 = candidates
+    for qidx, ans in enumerate(sample):
+        if ans != -1:
+            continue
+        val1 = candidate_features[idx1][qidx]
+        val2 = candidate_features[idx2][qidx]
+        if (val1 == 1 and val2 == 0) or (val1 == 0 and val2 == 1):
+            return qidx
+    return None
+
+def find_unique_question_idx(sample, candidates, candidate_features):
+    """候補が3〜5体のとき、1体だけYESで他はNOな質問インデックスを返す"""
+    for qidx, ans in enumerate(sample):
+        if ans != -1:
+            continue
+        yes_candidates = [idx for idx in candidates if candidate_features[idx][qidx] == 1]
+        if len(yes_candidates) == 1:
+            return qidx
+    return None
+
 def select_best_question(sample, candidates, candidate_features):
-    """エントロピーが最大になる質問を選択"""
     if not candidates:
         return -1
+
+    # 2体のときは区別質問
+    if len(candidates) == 2:
+        qidx = find_distinguishing_question_idx(sample, candidates, candidate_features)
+        if qidx is not None:
+            return qidx
+
+    # 3〜5体のときはユニーク特徴を優先
+    if 2 < len(candidates) <= 5:
+        qidx = find_unique_question_idx(sample, candidates, candidate_features)
+        if qidx is not None:
+            return qidx
+
+    # 通常のエントロピー最大
     best_idx = -1
     best_score = -1
     for qidx, ans in enumerate(sample):
@@ -55,21 +90,15 @@ def select_best_question(sample, candidates, candidate_features):
     return best_idx
 
 def generate_candidate_features(pokemon_list, question_list):
-    """
-    pokemon_list: 各ポケモンのdictリスト
-    question_list: get_dynamic_questionsで得たdictリスト
-    戻り値: 全ポケモン×全質問 の0/1/-1テーブル, question_list
-    """
     features = []
     for poke in pokemon_list:
         poke_feat = []
         for q in question_list:
             key = q["key"]
             val = q["value"]
-            # key種別ごとに判定
             poke_val = poke.get(key)
-            if key in ["type", "color", "has_special_skill", "characteristic"]:
-                # typeやskill等
+            
+            if key in ["type", "color", "has_special_skill", "characteristic", "feature", "habitat", "initial"]:
                 if isinstance(poke_val, list):
                     poke_feat.append(1 if val in poke_val else 0)
                 else:
@@ -82,15 +111,21 @@ def generate_candidate_features(pokemon_list, question_list):
                 except Exception:
                     poke_feat.append(0)
             else:
-                poke_feat.append(-1)  # 未知質問など
+                poke_feat.append(-1)
         features.append(poke_feat)
         
+    idx_charmander = next(i for i, poke in enumerate(pokemon_list) if poke["name"] == "ヒトカゲ")
+    idx_vulpix = next(i for i, poke in enumerate(pokemon_list) if poke["name"] == "ロコン")
+    for qidx, q in enumerate(question_list):
+        v1 = features[idx_charmander][qidx]
+        v2 = features[idx_vulpix][qidx]
+        if v1 != v2:
+            print(f"{q['text']} : ヒトカゲ={v1}, ロコン={v2}")
     print("最終features shape:", len(features), len(features[0]))
     print("最終question_list件数:", len(question_list))
     return features, question_list
 
 def generate_realistic_sample(pokemon_list, candidate_features, max_questions=10):
-    """より現実的な学習サンプルを生成"""
     num_questions = len(candidate_features[0])
     sample = [-1] * num_questions
     candidates = list(range(len(pokemon_list)))
@@ -111,9 +146,9 @@ def generate_realistic_sample(pokemon_list, candidate_features, max_questions=10
 
 # ============ main ===============
 
-num_samples = 2000
+num_samples = 1000
 pokemon_list, categorical_values = make_pokemon_list_and_categorical_values()
-question_list = get_dynamic_questions()  # ←本番と同じdictリスト
+question_list = get_dynamic_questions(pokemon_list)
 candidate_features, question_list = generate_candidate_features(pokemon_list, question_list)
 
 num_questions = len(question_list)

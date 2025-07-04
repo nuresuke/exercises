@@ -3,9 +3,9 @@ CATEGORICAL_COLUMNS = [
     ("color", "色は{}ですか？"),
     ("habitat", "{}に生息していますか？"),
     ("feature", "外見的特徴は「{}」ですか？"),
-    ("has_special_skill", "{}を覚えますか？"),
+    ("has_special_skill", "特徴的な技は{}ですか？"),
     ("characteristic", "特性は{}ですか？"),
-    ("initial", "ポケモン名の頭文字は「{}」ですか？"),
+    ("initial", "そのポケモンの頭文字は「{}」ですか？"),
 ]
 
 BINARY_COLUMNS = [
@@ -18,5 +18,5 @@ BINARY_COLUMNS = [
 NUMERIC_COLUMNS = [
     ("weight", "重さは{}kg以上ですか？", [10, 30, 100]),
     ("height", "大きさは{}m以上ですか？", [1, 2, 5]),
-    ("evolution", "進化段階は{}以上ですか？", [2, 3]),
+    ("evolution", "進化段階は{}ですか？", [2, 3]),
 ]

@@ -11,38 +11,7 @@ import numpy as np
 import pickle
 
 with open("pokemon_jp_to_en.json", encoding="utf-8") as f:
-        JP_TO_EN = json.load(f)
-
-def load_ai_model_data():
-    with open('question_list.pkl', 'rb') as f:
-        question_list = pickle.load(f)
-    with open('pokemon_list.pkl', 'rb') as f:
-        pokemon_list = pickle.load(f)
-    with open('candidate_features.pkl', 'rb') as f:
-        candidate_features = pickle.load(f)
-        
-    # ここでprintしてみる
-    print("question_list[0]", question_list[0])
-    print("pokemon_list[0]", pokemon_list[0])
-    print("features[0]", candidate_features[0])
-
-def index_view(request):
-    request.session["user_answers"] = {}
-    request.session.modified = True
-    return render(request, "interface/index.html")
-
-def preparation_view(request):
-    return render(request, "interface/preparation.html")
-
-def explanation_view(request):
-    return render(request, "interface/explanation.html")
-
-import os
-from django.shortcuts import render
-from django.conf import settings
-import pickle
-import numpy as np
-import tensorflow as tf
+    JP_TO_EN = json.load(f)
 
 def load_ai_model_data():
     with open('question_list.pkl', 'rb') as f:
@@ -65,13 +34,12 @@ def get_poke_table():
     for p in Pokemon.objects.all():
         en_name = JP_TO_EN.get(p.name)
         if not en_name:
-            continue  # 変換できない場合はスキップ
+            continue
         poke_table[en_name] = {
             "number": f"No.{p.zukan_no:04d}",
             "name": p.name
         }
     return poke_table
-
 
 def get_answers_vector(request, questions):
     user_answers = request.session.get("user_answers", {})
@@ -105,9 +73,59 @@ def filter_candidates_by_ai_answers(answers_vector, ai_data):
         if is_valid:
             filtered_candidates.append(pokemon)
     print(f"候補: {len(filtered_candidates)}/{len(pokemon_list)}")
-    print("\n".join(debug_info[:151]))  # 最初の50件だけ
+    print("\n".join(debug_info[:151]))
     print(filtered_candidates)
     return filtered_candidates
+
+def select_humanlike_next_question(answers_vector, filtered_candidates, ai_data):
+    candidate_features = ai_data['features']
+    pokemon_list = ai_data['pokemons']
+
+    # 残り10体なら区別質問
+    pokemon_list = ai_data['pokemons']
+    idx1 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ヒトカゲ')
+    idx2 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ロコン')
+    features = ai_data['features']
+
+    print("区別できる質問インデックス:")
+    if len(filtered_candidates) == 2:
+        idx1 = pokemon_list.index(filtered_candidates[0])
+        idx2 = pokemon_list.index(filtered_candidates[1])
+        for qidx, ans in enumerate(answers_vector):
+            if ans != -1:
+                continue
+            val1 = candidate_features[idx1][qidx]
+            val2 = candidate_features[idx2][qidx]
+            if (val1 == 1 and val2 == 0) or (val1 == 0 and val2 == 1):
+                return qidx 
+        pokemon_list = ai_data['pokemons']
+        idx1 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ヒトカゲ')
+        idx2 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ロコン')
+        features = ai_data['features']
+
+        print("区別できる質問インデックス:")
+        for qidx in range(len(features[0])):
+            val1 = features[idx1][qidx]
+            val2 = features[idx2][qidx]
+            if (val1, val2) in [(0, 1), (1, 0)]:
+                print(f"質問{qidx}: ヒトカゲ={val1}, ロコン={val2}")
+    """
+        
+
+        """
+
+    # 残り3～5体ならユニーク特徴
+    if 2 < len(filtered_candidates) <= 5:
+        idxs = [pokemon_list.index(p) for p in filtered_candidates]
+        for qidx, ans in enumerate(answers_vector):
+            if ans != -1:
+                continue
+            yes_candidates = [idx for idx in idxs if candidate_features[idx][qidx] == 1]
+            if len(yes_candidates) == 1:
+                return qidx
+
+    # それ以外 or 見つからなければAIモデルに頼る
+    return select_next_question_ai(answers_vector, ai_data)
 
 def select_next_question_ai(answers_vector, ai_data):
     model = ai_data['model']
@@ -119,6 +137,21 @@ def select_next_question_ai(answers_vector, ai_data):
         if answers_vector[idx] == -1:
             return idx
     return None
+
+def index_view(request):
+    request.session["user_answers"] = {}
+    request.session.modified = True
+    return render(request, "interface/index.html")
+
+def preparation_view(request):
+    return render(request, "interface/preparation.html")
+
+def explanation_view(request):
+    return render(request, "interface/explanation.html")
+
+def result_view(request):
+    return render(request,"interface/result.html")
+    
 
 def question_view(request):
     ai_data = load_ai_model_data()
@@ -137,7 +170,8 @@ def question_view(request):
     filtered_candidates = filter_candidates_by_ai_answers(answers_vector, ai_data)
     print(f"候補数: {len(filtered_candidates)}")
 
-    next_q_index = select_next_question_ai(answers_vector, ai_data)
+    # ★ ここを修正！AIだけでなくhumanlikeロジックも使う
+    next_q_index = select_humanlike_next_question(answers_vector, filtered_candidates, ai_data)
     if next_q_index is None:
         for i, ans in enumerate(answers_vector):
             if ans == -1:
@@ -155,15 +189,14 @@ def question_view(request):
     if len(filtered_candidates) <= 1:
         poke_table = get_poke_table()
         poke_table_json = json.dumps(poke_table, ensure_ascii=False)
-        # 候補が存在する場合、その名前を取得
         poke_name = filtered_candidates[0]['name'] if filtered_candidates else None
-        # 英語名も渡したい場合（例: 'en_name'キーがあれば）
         poke_en_name = JP_TO_EN.get(poke_name) if poke_name else None
         return render(request, "interface/prediction.html", {
-        "candidates": filtered_candidates,
-        "confidence": 1.0 if filtered_candidates else 0.0,
-        "poke_en_name": poke_en_name,
-        "poke_table_json": poke_table_json
+            "candidates": filtered_candidates,
+            "confidence": 1.0 if filtered_candidates else 0.0,
+            "poke_jp_name":poke_name,
+            "poke_en_name": poke_en_name,
+            "poke_table_json": poke_table_json
         })
 
     return render(
