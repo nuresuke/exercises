@@ -20,6 +20,42 @@ def load_ai_model_data():
         pokemon_list = pickle.load(f)
     with open('candidate_features.pkl', 'rb') as f:
         candidate_features = pickle.load(f)
+        
+    # ここでprintしてみる
+    print("question_list[0]", question_list[0])
+    print("pokemon_list[0]", pokemon_list[0])
+    print("features[0]", candidate_features[0])
+
+def index_view(request):
+    request.session["user_answers"] = {}
+    request.session.modified = True
+    return render(request, "interface/index.html")
+
+def preparation_view(request):
+    return render(request, "interface/preparation.html")
+
+def explanation_view(request):
+    return render(request, "interface/explanation.html")
+
+def prediction_view(request):
+    request.session["user_answers"] = {}
+    request.session.modified = True
+    return render(request, "interface/prediction.html")
+
+import os
+from django.shortcuts import render
+from django.conf import settings
+import pickle
+import numpy as np
+import tensorflow as tf
+
+def load_ai_model_data():
+    with open('question_list.pkl', 'rb') as f:
+        question_list = pickle.load(f)
+    with open('pokemon_list.pkl', 'rb') as f:
+        pokemon_list = pickle.load(f)
+    with open('candidate_features.pkl', 'rb') as f:
+        candidate_features = pickle.load(f)
     MODEL_PATH = os.path.join(settings.BASE_DIR, "question_selector_model.keras")
     model = tf.keras.models.load_model(MODEL_PATH)
     return {
