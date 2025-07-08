@@ -15,6 +15,7 @@
             height: 100vh;
             font-family: "Yu Gothic", "Meiryo", "sans-serif";
             overflow: hidden;
+            font-weight: bold; /* 追加: 全体を太字に */
         }
         .dialog {
             position: absolute;
@@ -31,8 +32,19 @@
             max-width: 600px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.1);
             opacity: 0.95;
+            font-weight: bold; /* 追加: ダイアログも太字に */
         }
         .jigglypuff {
+            position: absolute;
+            left: 50%;
+            top: 48%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            max-width: 90vw;
+            z-index: 2;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+        }
+        .poke-img {
             position: absolute;
             left: 50%;
             top: 48%;
@@ -60,6 +72,7 @@
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             min-width: 200px;
+            font-weight: bold; /* 追加: ボタンも太字に */
         }
         .answer-btn:hover {
             background: #f0f0f0;
@@ -78,6 +91,10 @@
                 width: 220px;
                 top: 45%;
             }
+            .poke-img {
+                width: 220px;
+                top: 45%;
+            }
         }
         @media (max-width: 600px) {
             .dialog {
@@ -86,6 +103,10 @@
                 width: 95vw;
             }
             .jigglypuff {
+                width: 120px;
+                top: 45%;
+            }
+            .poke-img {
                 width: 120px;
                 top: 45%;
             }
@@ -172,15 +193,16 @@
                             genders: {male: true, female: true}
                         }
                     }
-                    document.getElementById('pokeNumber').textContent = info.number;
-                    document.getElementById('pokeName').textContent = info.name;
+                    // もしpokeNumberやpokeName等の要素も使うなら、以下コメントアウトを外してHTMLにも反映する
+                    // document.getElementById('pokeNumber').textContent = info.number;
+                    // document.getElementById('pokeName').textContent = info.name;
 
                 })
                 .catch(() => {
                     document.getElementById('pokeImg').alt = "画像が取得できません";
-                    document.getElementById('pokeNumber').textContent = '-';
-                    document.getElementById('pokeName').textContent = pokemonName;
-                    document.getElementById('pokeGenders').textContent = '';
+                    // document.getElementById('pokeNumber').textContent = '-';
+                    // document.getElementById('pokeName').textContent = pokemonName;
+                    // document.getElementById('pokeGenders').textContent = '';
                 });
         })();
         const jp_name = "{{ poke_jp_name }}";

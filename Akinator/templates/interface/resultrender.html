@@ -16,6 +16,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
+            font-weight: bold; /* 全体を太字に */
         }
         .bg-container {
             position: fixed;
@@ -30,8 +31,8 @@
         .main-box {
             position: absolute;
             left: 7vw;
-            top: 17vh; /* 少し下に移動 */
-            width: 48vw; /* 幅を小さく */
+            top: 17vh;
+            width: 48vw;
             min-width: 300px;
             max-width: 720px;
             min-height: 190px;
@@ -44,6 +45,7 @@
             flex-direction: column;
             align-items: center;
             z-index: 2;
+            font-weight: bold; /* 明示的に太字 */
         }
         .main-box-text {
             font-size: 3.2rem;
@@ -52,6 +54,7 @@
             font-family: "serif";
             text-align: center;
             letter-spacing: 0.08em;
+            font-weight: bold; /* 明示的に太字 */
         }
         .answer-input {
             width: 72%;
@@ -64,6 +67,7 @@
             margin-bottom: 20px;
             box-sizing: border-box;
             text-align: center;
+            font-weight: bold; /* 明示的に太字 */
         }
         .send-btn-box {
             position: absolute;
@@ -81,6 +85,7 @@
             border: 5px solid #222;
             border-radius: 18px;
             box-shadow: 2px 2px 10px #aaa;
+            font-weight: bold; /* 明示的に太字 */
         }
         .send-btn {
             width: 100%;
@@ -90,6 +95,7 @@
             background: transparent;
             border: none;
             cursor: pointer;
+            font-weight: bold; /* 明示的に太字 */
         }
         .meowth-img-box {
             position: absolute;
@@ -176,27 +182,6 @@
 </body>
     <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
     <script>
-        //音声の再生
-        document.getElementById("audio").play();
-
-        //音声の一時停止
-        document.getElementById("audio").pause();
-
-
-        $(function () {
-        var audioBtn = $(".audio_button"),
-            audioWrap = $(".audio_wrap"),
-            audio = document.getElementById("audio");
-
-        audioBtn.on("click", function () {
-            if (audioWrap.hasClass("play")) {
-            audio.pause();
-            audioWrap.removeClass("play");
-            } else {
-            audio.play();
-            audioWrap.addClass("play");
-            }
-        });
-        });
+        // 不要な音声再生・一時停止の記述は削除
     </script>
 </html>
