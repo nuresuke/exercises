@@ -14,8 +14,7 @@
             background: url("{% static 'interface/images/gras2.jpg' %}") no-repeat center center fixed;
             background-size: cover;
             font-family: "Yu Gothic", "Meiryo", sans-serif;
-            font-weight: bold; /* 全体を太字に */
-        }
+                    }
         .gameover {
             position: absolute;
             top: 30px;
@@ -28,7 +27,6 @@
             pointer-events: none;
             white-space: nowrap;
             user-select: none;
-            font-weight: bold; /* 明示的に太字 */
         }
         .fail-center-area {
             position: absolute;
@@ -53,10 +51,9 @@
             font-size: 4.2em;
             z-index: 1;
             margin: 0 auto;
-            font-weight: bold; /* 明示的に太字 */
         }
         .meowth-img {
-            height: 580px;
+            height: 580px; /* ここを大きくしました（元:360px） */
             margin-left: 85px;
             z-index: 2;
             display: block;
@@ -83,7 +80,6 @@
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             min-width: 220px;
-            font-weight: bold; /* 明示的に太字 */
         }
         .result-btn:hover {
             background: #f0f0f0;
@@ -96,7 +92,7 @@
             .meowth-img {
                 position: static;
                 margin: 20px 0 0 0;
-                height: 240px;
+                height: 240px; /* モバイル時も大きく */
                 transform: none;
             }
             .fail-box {
