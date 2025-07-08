@@ -106,21 +106,20 @@
     <div class="dialog">あなたが思い浮かべているのは{{poke_jp_name}}ですか？</div>
     <img class="poke-img" id="pokeImg" src="" alt="ポケモン画像">
     <div class="button-area">
-        <button class="answer-btn">そうです</button>
+        <button class="answer-btn" id="yesBtn">そうです</button>
         <button class="answer-btn">違います</button>
         <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
         <script>
             // POSTでポケモン名（ローマ字）が送られた場合の処理
             // 例: fetchやformでPOST送信後にこのページに遷移し、bodyに{name: "pikachu"}などが含まれる
-
+            const pokemonName = "{{ poke_en_name }}";
             // ポストデータを取得する関数（fetchでデータを受け取る場合）
             async function getPokemonNameFromPost() {
             // サーバーサイドでリダイレクト時にwindow.nameやsessionStorage/localStorageなどに値を入れておく方法もあるが、
             // ここでは fetch で /result などにPOSTしてページ遷移後に受け取る例を想定
             // フロントエンド単体ではPOST bodyは直接取得できないため、FormData + sessionStorage で受け渡しが安全です
             // ここではsessionStorageの例
-            const pokemonName = "{{ poke_en_name }}";
-            window.location.href = "{% url 'result_page' %}?name=" + encodeURIComponent(pokemonName);
+            
             return pokemonName || 'dragonair'; // デフォルト: ププリン
             }
 
@@ -180,6 +179,14 @@
                     document.getElementById('pokeGenders').textContent = '';
                 });
         })();
+        const jp_name = "{{ poke_jp_name }}";
+        const en_name = "{{ poke_en_name }}";
+        document.getElementById('yesBtn').onclick = function() {
+            sessionStorage.setItem("poke_jp_name", jp_name);
+            sessionStorage.setItem("poke_en_name", en_name);
+            window.location.href = "{% url 'result_page' %}";
+};
+
         </script>
     </div>
 </body>

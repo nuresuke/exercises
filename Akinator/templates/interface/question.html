@@ -124,7 +124,11 @@
     <div id="fadeout-overlay"></div>
     <div class="container">
         <!-- 修正ボタン -->
-        <button class="edit-button">修正する</button>
+        <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="undo">
+        <button type="submit" class="edit-button">修正する</button>
+        </form>
 
         <!-- 吹き出し -->
         <div class="speech-bubble">

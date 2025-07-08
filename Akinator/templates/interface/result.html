@@ -62,6 +62,10 @@
             font-size: 2.5em;
             font-weight: bold;
         }
+        .poke-info .en-name {
+            font-size: 1.4em;
+            color: #555;
+        }
         .poke-info .genders {
             font-size: 2em;
             margin-top: 10px;
@@ -72,6 +76,11 @@
         }
         .genders .female {
             color: #e91e63;
+        }
+        .genders .genderless {
+            color: #888;
+            font-size: 1em;
+            margin-left: 0.8em;
         }
         .button-area {
             position: absolute;
@@ -132,9 +141,9 @@
         <div class="poke-info">
             <div class="number" id="pokeNumber">No.</div>
             <div class="name" id="pokeName">ポケモン名</div>
+            <div class="en-name" id="pokeEnName">English Name</div>
             <div class="genders" id="pokeGenders">
-                <span class="male">♂</span>
-                <span class="female">♀</span>
+                <!-- 性別アイコンがここに入る -->
             </div>
         </div>
     </div>
@@ -144,61 +153,66 @@
     </div>
     <audio id="bgAudio" src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
     <script>
-        // POSTでポケモン名（ローマ字）が送られた場合の処理
-        // 例: fetchやformでPOST送信後にこのページに遷移し、bodyに{name: "pikachu"}などが含まれる
-
-        // ポストデータを取得する関数（fetchでデータを受け取る場合）
+        // sessionStorageから名前取得
         async function getPokemonNameFromPost() {
-            // サーバーサイドでリダイレクト時にwindow.nameやsessionStorage/localStorageなどに値を入れておく方法もあるが、
-            // ここでは fetch で /result などにPOSTしてページ遷移後に受け取る例を想定
-            // フロントエンド単体ではPOST bodyは直接取得できないため、FormData + sessionStorage で受け渡しが安全です
-            // ここではsessionStorageの例
-            const pokemonName = localStorage.getItem('pokemonName');
-            return pokemonName || 'dragonair'; // デフォルト: ププリン
+            const jp_pokemonName = sessionStorage.getItem("poke_jp_name");
+            const pokemonName = sessionStorage.getItem("poke_en_name");
+            return {
+                en:pokemonName || 'dragonair', // デフォルト
+                jp:jp_pokemonName || ''  
+            }
         }
-        
+
+        // 性別表示用ヘルパー
+        function makeGenderIcons(genderRate) {
+            // gender_rateの値により表示を変える
+            // -1: genderless, 0: 100%♂, 8: 100%♀, 4: 50:50 ...
+            if (genderRate === -1) {
+                return `<span class="genderless">無性別</span>`;
+            }
+            let maleRate = Math.round(100 - (genderRate / 8 * 100));
+            let femaleRate = Math.round((genderRate / 8) * 100);
+            let html = '';
+            if (maleRate > 0) html += `<span class="male">♂ ${maleRate}%</span>`;
+            if (femaleRate > 0) html += `<span class="female">♀ ${femaleRate}%</span>`;
+            return html;
+        }
 
         (async function() {
-            const pokemonName = await getPokemonNameFromPost();
+            const { en: pokemonName, jp: jpPokemonName } = await getPokemonNameFromPost();
 
-            // URLを書き換え（クエリパラメータとして反映・リロードしない）
-            if (!location.search.includes('name=' + pokemonName)) {
-                const url = new URL(location);
-                url.searchParams.set('name', pokemonName);
-                window.history.replaceState(null, '', url);
-            }
-
-            // PokeAPIからデータ取得
+            // 画像・図鑑番号など
             fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
                 .then(response => response.json())
                 .then(data => {
                     const imgUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default || '';
                     document.getElementById('pokeImg').src = imgUrl;
+                    document.getElementById('pokeNumber').textContent = 'No.' + String(data.id).padStart(4, '0');
+                });
 
-                    // 図鑑番号・和名
-                    let info = pokeTable[pokemonName];
-                    if (!info) {
-                        // なければAPIの番号・英名
-                        info = {
-                            number: 'No.' + String(data.id).padStart(4, '0'),
-                            name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
-                            genders: {male: true, female: true}
-                        }
-                    }
-                    document.getElementById('pokeNumber').textContent = info.number;
-                    document.getElementById('pokeName').textContent = info.name;
+            // 種族情報（性別・多言語名など）
+            fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 多言語名を取得
+                    const names = data.names;
+                    // 和名
+                    const jaName = (names.find(n => n.language.name === "ja") || {}).name || jpPokemonName || "？？？";
+                    // 英名
+                    const enName = (names.find(n => n.language.name === "en") || {}).name || pokemonName;
+                    document.getElementById('pokeName').textContent = jaName;
+                    document.getElementById('pokeEnName').textContent = enName;
 
-                    // 性別表示
-                    let genderHtml = '';
-                    if (info.genders.male)   genderHtml += '<span class="male">♂</span>';
-                    if (info.genders.female) genderHtml += '<span class="female">♀</span>';
-                    document.getElementById('pokeGenders').innerHTML = genderHtml;
+                    // 性別
+                    const genderRate = data.gender_rate;
+                    document.getElementById('pokeGenders').innerHTML = makeGenderIcons(genderRate);
+
+                    // 他の言語名を表示したい場合はここで追加
                 })
                 .catch(() => {
-                    document.getElementById('pokeImg').alt = "画像が取得できません";
-                    document.getElementById('pokeNumber').textContent = '-';
-                    document.getElementById('pokeName').textContent = pokemonName;
-                    document.getElementById('pokeGenders').textContent = '';
+                    document.getElementById('pokeName').textContent = jpPokemonName || pokemonName;
+                    document.getElementById('pokeEnName').textContent = pokemonName;
+                    document.getElementById('pokeGenders').innerHTML = '';
                 });
         })();
     </script>

@@ -13,34 +13,6 @@ import pickle
 with open("pokemon_jp_to_en.json", encoding="utf-8") as f:
     JP_TO_EN = json.load(f)
 
-def load_ai_model_data():
-    with open('question_list.pkl', 'rb') as f:
-        question_list = pickle.load(f)
-    with open('pokemon_list.pkl', 'rb') as f:
-        pokemon_list = pickle.load(f)
-    with open('candidate_features.pkl', 'rb') as f:
-        candidate_features = pickle.load(f)
-        
-    # ここでprintしてみる
-    print("question_list[0]", question_list[0])
-    print("pokemon_list[0]", pokemon_list[0])
-    print("features[0]", candidate_features[0])
-
-def index_view(request):
-    request.session["user_answers"] = {}
-    request.session.modified = True
-    return render(request, "interface/index.html")
-
-def preparation_view(request):
-    return render(request, "interface/preparation.html")
-
-def explanation_view(request):
-    return render(request, "interface/explanation.html")
-
-def prediction_view(request):
-    request.session["user_answers"] = {}
-    request.session.modified = True
-    return render(request, "interface/prediction.html")
 
 import os
 from django.shortcuts import render
@@ -186,7 +158,11 @@ def explanation_view(request):
     return render(request, "interface/explanation.html")
 
 def result_view(request):
-    return render(request,"interface/result.html")
+    jp_name = request.GET.get("name")
+    
+    return render(request,"interface/result.html",{
+        "jp_name":jp_name,
+        })
     
 
 def question_view(request):
@@ -194,13 +170,29 @@ def question_view(request):
     questions = ai_data['questions']
 
     if request.method == "POST":
-        qid = request.POST.get("question_id")
-        answer = request.POST.get("answer")
-        if qid is not None:
-            user_answers = request.session.get("user_answers", {})
-            user_answers[str(qid)] = int(answer)
-            request.session["user_answers"] = user_answers
-            request.session.modified = True
+        if request.POST.get("action") == "undo":
+            # 修正ボタンで1つ前の状態に戻す
+            history = request.session.get("answers_history", [])
+            if history:
+                last = history.pop()
+                request.session["user_answers"] = last
+                request.session["answers_history"] = history
+                request.session.modified = True
+        else:
+            # 通常の回答
+            qid = request.POST.get("question_id")
+            answer = request.POST.get("answer")
+            if qid is not None:
+                # 履歴に現在の状態を積む
+                history = request.session.get("answers_history", [])
+                current = request.session.get("user_answers", {}).copy()
+                history.append(current)
+                request.session["answers_history"] = history
+
+                user_answers = current
+                user_answers[str(qid)] = int(answer)
+                request.session["user_answers"] = user_answers
+                request.session.modified = True
 
     answers_vector = get_answers_vector(request, questions)
     filtered_candidates = filter_candidates_by_ai_answers(answers_vector, ai_data)
