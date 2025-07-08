@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,7 +11,7 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
-            background: url('gras2.jpg') no-repeat center center fixed;
+            background: url("{% static 'interface/images/gras2.jpg' %}") no-repeat center center fixed;
             background-size: cover;
             font-family: "Yu Gothic", "Meiryo", sans-serif;
         }
@@ -121,10 +122,16 @@
             残念！負けちゃった
         </div>
     </div>
-    <img class="meowth-img" src="nya-su.png" alt="ニャース">
+    <img class="meowth-img" src="{% static 'interface/images/nya-su.png' %}" alt="ニャース">
     <div class="button-area">
+        <form method="post" action="{% url 'restart' %}">
+            {% csrf_token %}
         <button class="result-btn">もう一度</button>
+        </form>
+        <form method="post" action="{% url 'index' %}">
+            {% csrf_token %}
         <button class="result-btn">やめる</button>
+        </form>
         <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
         <script>
             //音声の再生

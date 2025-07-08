@@ -23,7 +23,7 @@
             top: 0;
             width: 100vw;
             height: 100vh;
-            background: url("{% static 'interface/images/haikei.png' %}") no-repeat center center;
+            background: url("{% static 'interface/images/gras2.jpg' %}") no-repeat center center;
             background-size: cover;
             z-index: 0;
         }
@@ -165,10 +165,12 @@
     <div class="bg-container"></div>
     <div class="main-box">
         <div class="main-box-text">正解を入力してね！</div>
-        <input class="answer-input" type="text" placeholder="ここに入力">
+        <input class="answer-input" type="text" placeholder="ここに入力" id="poke_name" name="poke_name">
     </div>
     <div class="send-btn-box">
-        <button class="send-btn">送信</button>
+        <form action="{% url 'render_page' %}" method="get" onsubmit="return checkPokemonExists();">
+        <button class="send-btn" type="submit">送信</button>
+        </form>
     </div>
     <div class="meowth-img-box">
         <img src="{% static 'interface/images/nya-su.png' %}" alt="ニャース">
@@ -176,11 +178,30 @@
 </body>
     <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
     <script>
-        //音声の再生
-        document.getElementById("audio").play();
+       // poke_table_jsonをテンプレートから受け取る
+        const pokeTable = JSON.parse('{{ poke_table_json|escapejs }}');
+    
+        function checkPokemonExists() {
+            const inputName = document.getElementById('poke_name').value.trim();
+            let found = false;
 
-        //音声の一時停止
-        document.getElementById("audio").pause();
+        // pokeTableのkey（英語名）か、value['name']（日本語名）に一致するものを探す
+            for (const enName in pokeTable) {
+                if (
+                    enName === inputName ||
+                    pokeTable[enName]['name'] === inputName
+                ) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                alert('そのポケモンは存在しません');
+                return false; // フォーム送信を止める
+            }
+            return true;
+    }
 
 
         $(function () {

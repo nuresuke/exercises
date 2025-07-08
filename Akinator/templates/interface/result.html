@@ -11,7 +11,7 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
-            background: url(gras2.jpg) no-repeat center center fixed;
+            background: url("{% static 'interface/images/gras2.jpg' %}") no-repeat center center fixed;
             background-size: cover;
             font-family: "Yu Gothic", "Meiryo", sans-serif;
         }
@@ -153,7 +153,10 @@
             {% csrf_token %}
         <button class="result-btn" type="submit">もう一度</button>
         </form>
-        <button class="result-btn" onclick="window.close()">やめる</button>
+        <form method="post" action="{% url 'index' %}">
+            {% csrf_token %}
+        <button class="result-btn" type="submit">やめる</button>
+        </form>
     </div>
     <audio id="bgAudio" src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
     <script>

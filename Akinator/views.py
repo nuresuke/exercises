@@ -176,6 +176,9 @@ def restart_view(request):
     request.session.modified = True
     return redirect('question_page')
 
+def resultrender_view(request):
+    return render(request,"interface/gameover.html")
+
 def question_view(request):
     ai_data = load_ai_model_data()
     questions = ai_data['questions']
@@ -185,7 +188,7 @@ def question_view(request):
         count = request.session.get('not_correct_count', 0) + 1
         request.session['not_correct_count'] = count
 
-        if count < 5:
+        if count < 2:
             # 履歴リセットして最初の質問へ
             request.session["user_answers"] = {}
             request.session["answers_history"] = []
@@ -194,7 +197,11 @@ def question_view(request):
         else:
             # 5回目。カウンタリセットして結果画面へ
             request.session['not_correct_count'] = 0
-            return render(request, "interface/resultrender.html")
+            poke_table = get_poke_table()
+            poke_table_json = json.dumps(poke_table, ensure_ascii=False)
+            return render(request, "interface/resultrender.html",{
+                "poke_table_json":poke_table_json
+            })
     
     
     
