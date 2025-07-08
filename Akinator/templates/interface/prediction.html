@@ -172,15 +172,16 @@
                             genders: {male: true, female: true}
                         }
                     }
-                    document.getElementById('pokeNumber').textContent = info.number;
-                    document.getElementById('pokeName').textContent = info.name;
+                    // もしpokeNumberやpokeName等の要素も使うなら、以下コメントアウトを外してHTMLにも反映する
+                    // document.getElementById('pokeNumber').textContent = info.number;
+                    // document.getElementById('pokeName').textContent = info.name;
 
                 })
                 .catch(() => {
                     document.getElementById('pokeImg').alt = "画像が取得できません";
-                    document.getElementById('pokeNumber').textContent = '-';
-                    document.getElementById('pokeName').textContent = pokemonName;
-                    document.getElementById('pokeGenders').textContent = '';
+                    // document.getElementById('pokeNumber').textContent = '-';
+                    // document.getElementById('pokeName').textContent = pokemonName;
+                    // document.getElementById('pokeGenders').textContent = '';
                 });
         })();
         const jp_name = "{{ poke_jp_name }}";
