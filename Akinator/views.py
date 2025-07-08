@@ -1,6 +1,6 @@
 import json
 import os
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from Akinator.management.commands.generate_question import get_dynamic_questions
 from django.conf import settings
 from .models import Pokemon
@@ -55,7 +55,12 @@ def get_answers_vector(request, questions):
     for q in questions:
         qid = q.get("id")
         answer = user_answers.get(str(qid))
-        answers_vector.append(-1 if answer is None else answer)
+        if answer == -2:
+            answers_vector.append(-2)
+        elif answer is None:
+            answers_vector.append(-1)
+        else:
+            answers_vector.append(answer)
     print("answers_vector:", answers_vector)
     return answers_vector
 
@@ -67,7 +72,7 @@ def filter_candidates_by_ai_answers(answers_vector, ai_data):
     for i, pokemon in enumerate(pokemon_list):
         is_valid = True
         for q_idx, answer in enumerate(answers_vector):
-            if answer == -1:
+            if answer == -1 or answer == -2:
                 continue
             feature_val = candidate_features[i][q_idx]
             if feature_val == -1:
@@ -164,11 +169,35 @@ def result_view(request):
         "jp_name":jp_name,
         })
     
+def restart_view(request):
+    # セッションのリセット
+    request.session["user_answers"] = {}
+    request.session["answers_history"] = []
+    request.session.modified = True
+    return redirect('question_page')
 
 def question_view(request):
     ai_data = load_ai_model_data()
     questions = ai_data['questions']
 
+    # 1. 「違います」が押された場合の特別処理
+    if request.method == "POST" and request.POST.get("action") == "not_correct":
+        count = request.session.get('not_correct_count', 0) + 1
+        request.session['not_correct_count'] = count
+
+        if count < 5:
+            # 履歴リセットして最初の質問へ
+            request.session["user_answers"] = {}
+            request.session["answers_history"] = []
+            request.session.modified = True
+            return redirect('question_page')
+        else:
+            # 5回目。カウンタリセットして結果画面へ
+            request.session['not_correct_count'] = 0
+            return render(request, "interface/resultrender.html")
+    
+    
+    
     if request.method == "POST":
         if request.POST.get("action") == "undo":
             # 修正ボタンで1つ前の状態に戻す
@@ -178,22 +207,29 @@ def question_view(request):
                 request.session["user_answers"] = last
                 request.session["answers_history"] = history
                 request.session.modified = True
+            else:
+                # 履歴が空→完全リセット（最初の質問へ戻す）
+                request.session["user_answers"] = {}
+                request.session["answers_history"] = []
+                request.session.modified = True
+                return redirect('question_page')
         else:
             # 通常の回答
             qid = request.POST.get("question_id")
             answer = request.POST.get("answer")
             if qid is not None:
-                # 履歴に現在の状態を積む
                 history = request.session.get("answers_history", [])
                 current = request.session.get("user_answers", {}).copy()
-                history.append(current)
+                history.append(current.copy())
                 request.session["answers_history"] = history
 
                 user_answers = current
+            if answer == "-1":
+                user_answers[str(qid)] = -2  # わからない
+            else:
                 user_answers[str(qid)] = int(answer)
-                request.session["user_answers"] = user_answers
-                request.session.modified = True
-
+            request.session["user_answers"] = user_answers
+            request.session.modified = True
     answers_vector = get_answers_vector(request, questions)
     filtered_candidates = filter_candidates_by_ai_answers(answers_vector, ai_data)
     print(f"候補数: {len(filtered_candidates)}")

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -148,7 +149,10 @@
         </div>
     </div>
     <div class="button-area">
-        <button class="result-btn" onclick="location.reload()">もう一度</button>
+        <form method="post" action="{% url 'restart' %}">
+            {% csrf_token %}
+        <button class="result-btn" type="submit">もう一度</button>
+        </form>
         <button class="result-btn" onclick="window.close()">やめる</button>
     </div>
     <audio id="bgAudio" src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>

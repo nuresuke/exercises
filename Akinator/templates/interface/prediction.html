@@ -107,7 +107,11 @@
     <img class="poke-img" id="pokeImg" src="" alt="ポケモン画像">
     <div class="button-area">
         <button class="answer-btn" id="yesBtn">そうです</button>
-        <button class="answer-btn">違います</button>
+        <form method="post">
+            {% csrf_token %}
+        <input type="hidden" name="action" value="not_correct">
+        <button class="answer-btn" type="submit">違います</button>
+        </form>
         <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
         <script>
             // POSTでポケモン名（ローマ字）が送られた場合の処理
