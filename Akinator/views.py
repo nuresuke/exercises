@@ -94,13 +94,6 @@ def select_humanlike_next_question(answers_vector, filtered_candidates, ai_data)
     candidate_features = ai_data['features']
     pokemon_list = ai_data['pokemons']
 
-    # 残り10体なら区別質問
-    pokemon_list = ai_data['pokemons']
-    idx1 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ヒトカゲ')
-    idx2 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ロコン')
-    features = ai_data['features']
-
-    print("区別できる質問インデックス:")
     if len(filtered_candidates) == 2:
         idx1 = pokemon_list.index(filtered_candidates[0])
         idx2 = pokemon_list.index(filtered_candidates[1])
@@ -112,21 +105,6 @@ def select_humanlike_next_question(answers_vector, filtered_candidates, ai_data)
             if (val1 == 1 and val2 == 0) or (val1 == 0 and val2 == 1):
                 return qidx 
         pokemon_list = ai_data['pokemons']
-        idx1 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ヒトカゲ')
-        idx2 = next(i for i, p in enumerate(pokemon_list) if p['name'] == 'ロコン')
-        features = ai_data['features']
-
-        print("区別できる質問インデックス:")
-        for qidx in range(len(features[0])):
-            val1 = features[idx1][qidx]
-            val2 = features[idx2][qidx]
-            if (val1, val2) in [(0, 1), (1, 0)]:
-                print(f"質問{qidx}: ヒトカゲ={val1}, ロコン={val2}")
-    """
-        
-
-        """
-
     # 残り3～5体ならユニーク特徴
     if 2 < len(filtered_candidates) <= 5:
         idxs = [pokemon_list.index(p) for p in filtered_candidates]
@@ -188,7 +166,7 @@ def question_view(request):
         count = request.session.get('not_correct_count', 0) + 1
         request.session['not_correct_count'] = count
 
-        if count < 2:
+        if count < 1:
             # 履歴リセットして最初の質問へ
             request.session["user_answers"] = {}
             request.session["answers_history"] = []

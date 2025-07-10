@@ -135,24 +135,25 @@
             .triangle-area { top: 56%; height: 62vw; }
             .box1, .box2, .box3 { font-size: 14px; padding: 8px 2px;}
         }
-        #fadein-overlay, #fadeout-overlay {
+    #fadein-overlay, #fadeout-overlay {
         position: fixed;
         left: 0; top: 0; width: 100vw; height: 100vh;
         background: #000;
         z-index: 9999;
         pointer-events: none;
-        }
-        #fadein-overlay {
+    }
+    #fadein-overlay {
         opacity: 1;
         transition: opacity 2s;
         display: block;
-        }
-        #fadeout-overlay {
+    }
+    #fadeout-overlay {
         opacity: 0;
         transition: opacity 0.7s;
         display: none;
-        }
+    }
     </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
     <div id="fadein-overlay"></div>

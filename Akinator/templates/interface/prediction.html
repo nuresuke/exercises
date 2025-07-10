@@ -65,6 +65,24 @@
             background: #f0f0f0;
             color: #0066cc;
         }
+        #fadein-overlay, #fadeout-overlay {
+            position: fixed;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: #000;
+            z-index: 9999;
+            transition: opacity 0.7s;
+            pointer-events: none;
+    }
+        
+    #fadein-overlay {
+            opacity: 1;
+            display: block;
+    }
+    #fadeout-overlay {
+            opacity: 0;
+            display: none;
+    }
+    
         @media (max-width: 900px) {
             .button-area {
                 gap: 40px;
@@ -103,6 +121,8 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
+    <div id="fadein-overlay"></div>
+    <div id="fadeout-overlay"></div>
     <div class="dialog">あなたが思い浮かべているのは{{poke_jp_name}}ですか？</div>
     <img class="poke-img" id="pokeImg" src="" alt="ポケモン画像">
     <div class="button-area">
@@ -122,7 +142,7 @@
             // サーバーサイドでリダイレクト時にwindow.nameやsessionStorage/localStorageなどに値を入れておく方法もあるが、
             // ここでは fetch で /result などにPOSTしてページ遷移後に受け取る例を想定
             // フロントエンド単体ではPOST bodyは直接取得できないため、FormData + sessionStorage で受け渡しが安全です
-            // ここではsessionStorageの例
+            // ここではsessionStorage
             
             return pokemonName || 'dragonair'; // デフォルト: ププリン
             }
@@ -191,6 +211,47 @@
             sessionStorage.setItem("poke_en_name", en_name);
             window.location.href = "{% url 'result_page' %}";
 };
+        // フェードイン処理
+  function fadeIn() {
+    const overlay = document.getElementById('fadein-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'block';
+    overlay.style.opacity = '1';
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 700);
+    }, 10);
+  }
+  // フェードアウト→遷移
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const overlay = document.getElementById('fadeout-overlay');
+      overlay.style.display = 'block';
+      requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+      });
+      setTimeout(() => {
+        form.submit();
+      }, 700);
+    });
+  });
+
+  window.addEventListener('load', fadeIn);
+  window.addEventListener('pageshow', function(event) {
+    const fadeout = document.getElementById('fadeout-overlay');
+    if (fadeout) {
+        fadeout.style.opacity = '0';
+        fadeout.style.display = 'none';
+    }
+    const overlay = document.getElementById('fadein-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'block';
+    overlay.style.opacity = '1';
+    setTimeout(fadeIn, 10);
+  });
 
         </script>
     </div>
