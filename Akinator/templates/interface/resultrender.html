@@ -176,6 +176,7 @@
             .answer-input { font-size: 1rem; }
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 
 <body>
@@ -187,8 +188,8 @@
         <input class="answer-input" type="text" placeholder="ここに入力" id="poke_name" name="poke_name">
     </div>
     <div class="send-btn-box">
-        <form action="{% url 'render_page' %}" method="get" onsubmit="return checkPokemonExists();">
-        <button class="send-btn" type="submit">送信</button>
+        <form action="{% url 'render_page' %}" method="get" id="answer-form">
+            <button class="send-btn" type="submit">送信</button>
         </form>
     </div>
     <div class="meowth-img-box">
@@ -197,78 +198,54 @@
 </body>
     <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
     <script>
-       // poke_table_jsonをテンプレートから受け取る
         const pokeTable = JSON.parse('{{ poke_table_json|escapejs }}');
-    
-        function checkPokemonExists() {
-            const inputName = document.getElementById('poke_name').value.trim();
-            let found = false;
 
-        // pokeTableのkey（英語名）か、value['name']（日本語名）に一致するものを探す
-            for (const enName in pokeTable) {
-                if (
-                    enName === inputName ||
-                    pokeTable[enName]['name'] === inputName
-                ) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                alert('そのポケモンは存在しません');
-                return false; // フォーム送信を止める
-            }
-            return true;
-    }
-
-
-        $(function () {
-        var audioBtn = $(".audio_button"),
-            audioWrap = $(".audio_wrap"),
-            audio = document.getElementById("audio");
-
-        audioBtn.on("click", function () {
-            if (audioWrap.hasClass("play")) {
-            audio.pause();
-            audioWrap.removeClass("play");
-            } else {
-            audio.play();
-            audioWrap.addClass("play");
-            }
-        });
-        });
-
-        // フェードイン処理
-  function fadeIn() {
+// フェードイン処理
+function fadeIn() {
     const overlay = document.getElementById('fadein-overlay');
     if (!overlay) return;
     overlay.style.display = 'block';
     overlay.style.opacity = '1';
     setTimeout(() => {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.style.display = 'none';
-      }, 700);
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 700);
     }, 10);
-  }
-  // フェードアウト→遷移
-  document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const overlay = document.getElementById('fadeout-overlay');
-      overlay.style.display = 'block';
-      requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-      });
-      setTimeout(() => {
-        form.submit();
-      }, 700);
-    });
-  });
+}
 
-  window.addEventListener('load', fadeIn);
-  window.addEventListener('pageshow', function(event) {
+// バリデーション&フェードアウト付きsubmit
+document.getElementById('answer-form').addEventListener('submit', function(e) {
+    const inputName = document.getElementById('poke_name').value.trim();
+    let found = false;
+    for (const enName in pokeTable) {
+        if (
+            enName === inputName ||
+            pokeTable[enName]['name'] === inputName
+        ) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        alert('そのポケモンは存在しません');
+        e.preventDefault();
+        return;
+    }
+    e.preventDefault();
+    const overlay = document.getElementById('fadeout-overlay');
+    overlay.style.display = 'block';
+    overlay.style.opacity = '0';
+    requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+    });
+    setTimeout(() => {
+        e.target.submit();
+    }, 700);
+});
+
+window.addEventListener('load', fadeIn);
+window.addEventListener('pageshow', function(event) {
     const fadeout = document.getElementById('fadeout-overlay');
     if (fadeout) {
         fadeout.style.opacity = '0';
@@ -278,7 +255,12 @@
     if (!overlay) return;
     overlay.style.display = 'block';
     overlay.style.opacity = '1';
-    setTimeout(fadeIn, 10);
-  });
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 700);
+    }, 10);
+});
     </script>
 </html>

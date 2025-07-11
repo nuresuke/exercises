@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>失敗画面</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -15,7 +14,7 @@
             background: url("{% static 'interface/images/gras2.jpg' %}") no-repeat center center fixed;
             background-size: cover;
             font-family: "Yu Gothic", "Meiryo", sans-serif;
-                    }
+        }
         .gameover {
             position: absolute;
             top: 30px;
@@ -54,7 +53,7 @@
             margin: 0 auto;
         }
         .meowth-img {
-            height: 580px; /* ここを大きくしました（元:360px） */
+            height: 580px;
             margin-left: 85px;
             z-index: 2;
             display: block;
@@ -93,12 +92,12 @@
             z-index: 9999;
             transition: opacity 0.7s;
             pointer-events: none;
-            }
-            #fadein-overlay {
+        }
+        #fadein-overlay {
             opacity: 1;
             display: block;
-            }
-            #fadeout-overlay {
+        }
+        #fadeout-overlay {
             opacity: 0;
             display: none;
         }
@@ -109,7 +108,7 @@
             .meowth-img {
                 position: static;
                 margin: 20px 0 0 0;
-                height: 240px; /* モバイル時も大きく */
+                height: 240px;
                 transform: none;
             }
             .fail-box {
@@ -137,64 +136,73 @@
     <div id="fadeout-overlay"></div>
     <div class="gameover">Game Over…!</div>
     <div class="fail-center-area">
-        <div class="fail-box">
-            残念！負けちゃった
-        </div>
+        <div class="fail-box">残念！負けちゃった</div>
     </div>
     <img class="meowth-img" src="{% static 'interface/images/nya-su.png' %}" alt="ニャース">
     <div class="button-area">
         <form method="post" action="{% url 'restart' %}">
             {% csrf_token %}
-        <button class="result-btn">もう一度</button>
+            <button class="result-btn">もう一度</button>
         </form>
         <form method="post" action="{% url 'index' %}">
             {% csrf_token %}
-        <button class="result-btn">やめる</button>
+            <button class="result-btn">やめる</button>
         </form>
-        <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
-        <script>
-            // フェードイン処理
-  function fadeIn() {
-    const overlay = document.getElementById('fadein-overlay');
-    if (!overlay) return;
-    overlay.style.display = 'block';
-    overlay.style.opacity = '1';
-    setTimeout(() => {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.style.display = 'none';
-      }, 700);
-    }, 10);
-  }
-  // フェードアウト→遷移
-  document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const overlay = document.getElementById('fadeout-overlay');
-      overlay.style.display = 'block';
-      requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-      });
-      setTimeout(() => {
-        form.submit();
-      }, 700);
-    });
-  });
-
-  window.addEventListener('load', fadeIn);
-  window.addEventListener('pageshow', function(event) {
-    const fadeout = document.getElementById('fadeout-overlay');
-    if (fadeout) {
-        fadeout.style.opacity = '0';
-        fadeout.style.display = 'none';
-    }
-    const overlay = document.getElementById('fadein-overlay');
-    if (!overlay) return;
-    overlay.style.display = 'block';
-    overlay.style.opacity = '1';
-    setTimeout(fadeIn, 10);
-  });
-        </script>
     </div>
+    <audio src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
+    <script>
+    // DOMの読み込みが完了してから実行
+    document.addEventListener('DOMContentLoaded', function() {
+        function fadeIn() {
+            const overlay = document.getElementById('fadein-overlay');
+            if (!overlay) return;
+            overlay.style.display = 'block';
+            overlay.style.opacity = '1';
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 700);
+            }, 10);
+        }
+
+        // フェードアウト→遷移
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const overlay = document.getElementById('fadeout-overlay');
+                overlay.style.display = 'block';
+                overlay.style.opacity = '0';
+                requestAnimationFrame(() => {
+                    overlay.style.opacity = '1';
+                });
+                setTimeout(() => {
+                    form.submit();
+                }, 700);
+            });
+        });
+
+        fadeIn();
+    });
+
+    // 戻るボタンで復帰したときにもフェードインする
+    window.addEventListener('pageshow', function(event) {
+        const fadeout = document.getElementById('fadeout-overlay');
+        if (fadeout) {
+            fadeout.style.opacity = '0';
+            fadeout.style.display = 'none';
+        }
+        const overlay = document.getElementById('fadein-overlay');
+        if (!overlay) return;
+        overlay.style.display = 'block';
+        overlay.style.opacity = '1';
+        setTimeout(() => {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 700);
+        }, 10);
+    });
+    </script>
 </body>
 </html>
