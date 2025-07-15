@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
             background-size: cover;
             font-family: "Yu Gothic", "Meiryo", sans-serif;
         }
+
         .congrats {
             position: absolute;
             top: 30px;
@@ -28,14 +30,15 @@
             white-space: nowrap;
             user-select: none;
         }
+
         .result-box {
             position: absolute;
             top: 30%;
             left: 50%;
             transform: translate(-50%, -30%);
-            background: rgba(255,255,255,0.92);
+            background: rgba(255, 255, 255, 0.92);
             border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
             min-width: 350px;
             min-height: 200px;
             display: flex;
@@ -43,11 +46,13 @@
             padding: 40px 80px;
             gap: 50px;
         }
+
         .poke-img {
             width: 250px;
             height: 250px;
             object-fit: contain;
         }
+
         .poke-info {
             display: flex;
             flex-direction: column;
@@ -55,34 +60,42 @@
             font-size: 2em;
             gap: 16px;
         }
+
         .poke-info .number {
             font-size: 1.2em;
             color: #333;
         }
+
         .poke-info .name {
             font-size: 2.5em;
             font-weight: bold;
         }
+
         .poke-info .en-name {
             font-size: 1.4em;
             color: #555;
         }
+
         .poke-info .genders {
             font-size: 2em;
             margin-top: 10px;
         }
+
         .genders .male {
             color: #2196f3;
             margin-right: 24px;
         }
+
         .genders .female {
             color: #e91e63;
         }
+
         .genders .genderless {
             color: #888;
             font-size: 1em;
             margin-left: 0.8em;
         }
+
         .button-area {
             position: absolute;
             bottom: 7%;
@@ -91,6 +104,7 @@
             display: flex;
             gap: 100px;
         }
+
         .result-btn {
             font-size: 2.8em;
             padding: 24px 80px;
@@ -100,28 +114,75 @@
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             min-width: 220px;
-            font-weight: bold; /* 太字に */
+            font-weight: bold;
+            /* 太字に */
         }
+
         .result-btn:hover {
             background: #f0f0f0;
             color: #0066cc;
         }
-        #fadein-overlay, #fadeout-overlay {
+
+        #fadein-overlay,
+        #fadeout-overlay {
             position: fixed;
-            left: 0; top: 0; width: 100vw; height: 100vh;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
             background: #000;
             z-index: 9999;
             transition: opacity 0.7s;
             pointer-events: none;
-            }
-            #fadein-overlay {
+        }
+
+        #fadein-overlay {
             opacity: 1;
             display: block;
-            }
-            #fadeout-overlay {
+        }
+
+        #fadeout-overlay {
             opacity: 0;
             display: none;
         }
+
+        .confetti-piece {
+            position: absolute;
+            width: 14px;
+            height: 30px;
+            background: hsl(var(--hue), 80%, 60%);
+            border-radius: 40%;
+            opacity: 0.85;
+            animation: confetti-fall 1.5s cubic-bezier(.2, .7, .7, 1.1) forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .cracker-left {
+            position: fixed;
+            left: 20px;
+            bottom: 10px;
+            width: 120px;
+            z-index: 1000;
+
+        }
+
+        .cracker-right {
+            position: fixed;
+            right: 20px;
+            bottom: 10px;
+            width: 120px;
+            z-index: 1000;
+            transform: scaleX(-1);
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translate(var(--dx, 0px), var(--dy, -400px)) rotate(720deg);
+                opacity: 0.4;
+            }
+        }
+
         @media (max-width: 700px) {
             .result-box {
                 flex-direction: column;
@@ -129,29 +190,36 @@
                 min-width: 90vw;
                 padding: 10px 3vw;
             }
+
             .poke-img {
                 width: 120px;
                 height: 120px;
             }
+
             .poke-info {
                 font-size: 1em;
                 gap: 8px;
             }
+
             .button-area {
                 flex-direction: column;
                 gap: 32px;
             }
+
             .result-btn {
                 font-size: 1.2em;
                 min-width: 120px;
                 padding: 10px 20px;
             }
+
             .congrats {
                 font-size: 1.5em;
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
+
 <body>
     <div id="fadein-overlay"></div>
     <div id="fadeout-overlay"></div>
@@ -167,14 +235,16 @@
             </div>
         </div>
     </div>
+    <img id="cracker-left" src="{% static 'interface/images/party-popper.png' %}" class="cracker-left">
+    <img id="cracker-right" src="{% static 'interface/images/party-popper.png' %}" class="cracker-right">
     <div class="button-area">
         <form method="post" action="{% url 'restart' %}">
             {% csrf_token %}
-        <button class="result-btn" type="submit">もう一度</button>
+            <button class="result-btn" type="submit">もう一度</button>
         </form>
         <form method="post" action="{% url 'index' %}">
             {% csrf_token %}
-        <button class="result-btn" type="submit">やめる</button>
+            <button class="result-btn" type="submit">やめる</button>
         </form>
     </div>
     <audio id="bgAudio" src="/しゅわしゅわハニーレモン350ml.mp3" autoplay loop></audio>
@@ -184,8 +254,8 @@
             const jp_pokemonName = sessionStorage.getItem("poke_jp_name");
             const pokemonName = sessionStorage.getItem("poke_en_name");
             return {
-                en:pokemonName || 'dragonair', // デフォルト
-                jp:jp_pokemonName || ''  
+                en: pokemonName || 'dragonair', // デフォルト
+                jp: jp_pokemonName || ''
             }
         }
 
@@ -204,7 +274,7 @@
             return html;
         }
 
-        (async function() {
+        (async function () {
             const { en: pokemonName, jp: jpPokemonName } = await getPokemonNameFromPost();
 
             // 画像・図鑑番号など
@@ -241,47 +311,99 @@
                     document.getElementById('pokeGenders').innerHTML = '';
                 });
         })();
-         // フェードイン処理
-  function fadeIn() {
-    const overlay = document.getElementById('fadein-overlay');
-    if (!overlay) return;
-    overlay.style.display = 'block';
-    overlay.style.opacity = '1';
-    setTimeout(() => {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.style.display = 'none';
-      }, 700);
-    }, 10);
-  }
-  // フェードアウト→遷移
-  document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const overlay = document.getElementById('fadeout-overlay');
-      overlay.style.display = 'block';
-      requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-      });
-      setTimeout(() => {
-        form.submit();
-      }, 700);
-    });
-  });
 
-  window.addEventListener('load', fadeIn);
-  window.addEventListener('pageshow', function(event) {
-    const fadeout = document.getElementById('fadeout-overlay');
-    if (fadeout) {
-        fadeout.style.opacity = '0';
-        fadeout.style.display = 'none';
-    }
-    const overlay = document.getElementById('fadein-overlay');
-    if (!overlay) return;
-    overlay.style.display = 'block';
-    overlay.style.opacity = '1';
-    setTimeout(fadeIn, 10);
-  });
+        function launchBothCrackers() {
+            confetti({
+                particleCount: 80,
+                angle: 60,         // 左上方向
+                spread: 140,       // 広がり
+                startVelocity: 60, // 飛距離（初速）
+                origin: { x: 0, y: 1 }
+            });
+            confetti({
+                particleCount: 80,
+                angle: 120,        // 右上方向
+                spread: 140,
+                startVelocity: 60,
+                origin: { x: 1, y: 1 }
+            });
+            setTimeout(() => {
+                document.getElementById('cracker-left').style.transition = 'opacity 0.6s';
+                document.getElementById('cracker-right').style.transition = 'opacity 0.6s';
+                document.getElementById('cracker-left').style.opacity = '0';
+                document.getElementById('cracker-right').style.opacity = '0';
+
+                // 完全に消す場合はさらに0.7秒後にdisplay:none
+                setTimeout(() => {
+                    document.getElementById('cracker-left').style.display = 'none';
+                    document.getElementById('cracker-right').style.display = 'none';
+                }, 700);
+            }, 1400); // confettiのdurationに合わせて
+        }
+
+        // フェードイン処理
+        function fadeIn() {
+            const overlay = document.getElementById('fadein-overlay');
+            if (!overlay) return;
+            overlay.style.display = 'block';
+            overlay.style.opacity = '1';
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    launchBothCrackers();
+                }, 700);
+            }, 10);
+        }
+        // フェードアウト→遷移
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const overlay = document.getElementById('fadeout-overlay');
+                overlay.style.display = 'block';
+                requestAnimationFrame(() => {
+                    overlay.style.opacity = '1';
+                });
+                setTimeout(() => {
+                    form.submit();
+                }, 700);
+            });
+        });
+
+        window.addEventListener('load', fadeIn);
+        window.addEventListener('pageshow', function (event) {
+            const fadeout = document.getElementById('fadeout-overlay');
+            if (fadeout) {
+                fadeout.style.opacity = '0';
+                fadeout.style.display = 'none';
+            }
+            const overlay = document.getElementById('fadein-overlay');
+            if (!overlay) return;
+            overlay.style.display = 'block';
+            overlay.style.opacity = '1';
+            setTimeout(fadeIn, 10);
+        });
+
+        function launchConfetti(fromX, fromY, direction) {
+            for (let i = 0; i < 40; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = fromX + 'px';
+                piece.style.top = fromY + 'px';
+                piece.style.setProperty('--hue', Math.floor(Math.random() * 360));
+                // direction: "left" or "right"
+                let angle = direction === "left"
+                    ? 60 + Math.random() * 60 // 左上方向
+                    : 120 + Math.random() * 60; // 右上方向
+                let distance = 350 + Math.random() * 150;
+                piece.style.setProperty('--dx', Math.cos(angle * Math.PI / 180) * distance);
+                piece.style.setProperty('--dy', -Math.sin(angle * Math.PI / 180) * distance);
+                piece.style.animationDelay = (Math.random() * 0.4) + 's';
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 2200);
+            }
+        }
     </script>
 </body>
+
 </html>
