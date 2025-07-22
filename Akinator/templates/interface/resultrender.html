@@ -217,10 +217,12 @@ function fadeIn() {
 // バリデーション&フェードアウト付きsubmit
 document.getElementById('answer-form').addEventListener('submit', function(e) {
     const inputName = document.getElementById('poke_name').value.trim();
+    console.log('pokeTable:', pokeTable);
+    console.log('inputName:', inputName);
     let found = false;
     for (const enName in pokeTable) {
         if (
-            enName === inputName ||
+            enName.toLowerCase() === inputName.toLowerCase() ||
             pokeTable[enName]['name'] === inputName
         ) {
             found = true;
