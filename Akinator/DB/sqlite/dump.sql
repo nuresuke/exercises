@@ -1,24 +1,6 @@
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
-CREATE TABLE pokemons (
-  '図鑑番号' INTEGER NOT NULL,
-  'ポケモン名' VARCHAR(20) NOT NULL,
-  'タイプ' VARCHAR(10) NOT NULL,
-  '色' VARCHAR(20) NOT NULL,
-  '重さ' FLOAT NOT NULL,
-  '大きさ' FLOAT NOT NULL,
-  '進化段階' INTEGER NOT NULL,
-  '飛行可能か' BOOLEAN NOT NULL,
-  '生息地' VARCHAR(50) NOT NULL,
-  '伝説のポケモン' BOOLEAN NOT NULL,
-  '外見的特徴' VARCHAR(50) NOT NULL,
-  '化石ポケモン' BOOLEAN NOT NULL,
-  '代表的な技' VARCHAR(20) NOT NULL,
-  'サトシの所持の有無' BOOLEAN NOT NULL,
-  '特性' VARCHAR(10) NOT NULL,
-  '頭文字' CHAR(1) NOT NULL,
-  PRIMARY KEY('図鑑番号')
-);
+
 INSERT INTO pokemons VALUES(1,'フシギダネ','くさ/どく','みどり',6.900000000000000355,0.6999999999999999556,1,0,'草原',0,'背中にタネ',0,'つるのムチ',1,'しんりょく','フ');
 INSERT INTO pokemons VALUES(2,'フシギソウ','くさ/どく','みどり',13.0,1.0,2,0,'草原',0,'背中に花芽',0,'はっぱカッター',0,'しんりょく','フ');
 INSERT INTO pokemons VALUES(3,'フシギバナ','くさ/どく','みどり',100.0,2.0,3,0,'草原',0,'背中に大きな花',0,'ソーラービーム',0,'しんりょく','フ');
