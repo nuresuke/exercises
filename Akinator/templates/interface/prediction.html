@@ -206,6 +206,8 @@
         })();
         const jp_name = "{{ poke_jp_name }}";
         const en_name = "{{ poke_en_name }}";
+        console.log(jp_name)
+        console.log(en_name)
         document.getElementById('yesBtn').onclick = function() {
             sessionStorage.setItem("poke_jp_name", jp_name);
             sessionStorage.setItem("poke_en_name", en_name);

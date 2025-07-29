@@ -1,6 +1,8 @@
 import os
 import pickle
 import json
+import shutil
+from django.db import connection
 from django.test import TestCase
 from django.conf import settings
 from Akinator.views import (
@@ -15,7 +17,36 @@ from Akinator.models import Pokemon
 
 class UtilsTests(TestCase):
     @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # テスト用DBに pokemons テーブルを作成
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS pokemons (
+                    "図鑑番号" INTEGER PRIMARY KEY,
+                    "ポケモン名" VARCHAR(20) NOT NULL,
+                    "タイプ" VARCHAR(10) NOT NULL,
+                    "色" VARCHAR(20) NOT NULL,
+                    "重さ" FLOAT NOT NULL,
+                    "大きさ" FLOAT NOT NULL,
+                    "進化段階" INTEGER NOT NULL,
+                    "飛行可能か" BOOLEAN NOT NULL,
+                    "生息地" VARCHAR(50) NOT NULL,
+                    "伝説のポケモン" BOOLEAN NOT NULL,
+                    "外見的特徴" VARCHAR(50) NOT NULL,
+                    "化石ポケモン" BOOLEAN NOT NULL,
+                    "代表的な技" VARCHAR(20) NOT NULL,
+                    "サトシの所持の有無" BOOLEAN NOT NULL,
+                    "特性" VARCHAR(10) NOT NULL,
+                    "頭文字" CHAR(1) NOT NULL
+                );
+            """)
+    @classmethod
     def setUpTestData(cls):
+        # バックアップ
+        for fname in ['question_list.pkl', 'pokemon_list.pkl', 'candidate_features.pkl', 'pokemon_jp_to_en.json',"question_selector_model.keras"]:
+            if os.path.exists(fname):
+                shutil.copy(fname, fname + '.bak')
         # ダミーデータ作成
         cls.dummy_questions = [{"id": 0, "text": "type:くさ"}, {"id": 1, "text": "type:ほのお"}]
         cls.dummy_pokemons = [{"name": "フシギダネ"}, {"name": "ヒトカゲ"}]
@@ -57,17 +88,17 @@ class UtilsTests(TestCase):
         self.assertIsInstance(result['features'], list)
 
     def test_ut_002_load_ai_model_data_file_not_found(self):
-        os.rename('question_list.pkl', 'question_list.pkl.bak')
+        os.rename('question_list.pkl', 'question_list_bak.pkl')
         try:
             with self.assertRaises(FileNotFoundError):
                 load_ai_model_data()
         finally:
-            os.rename('question_list.pkl.bak', 'question_list.pkl')
+            os.rename('question_list_bak.pkl', 'question_list.pkl')
 
     def test_ut_003_get_poke_table_no_jp_to_en(self):
         Pokemon.objects.create(
     zukan_no=151,
-    name="ミュウ",
+    name="ミュコ",
     type="エスパー",
     color="ピンク",
     weight=4.0,
@@ -86,7 +117,7 @@ class UtilsTests(TestCase):
         with open("pokemon_jp_to_en.json", "w", encoding="utf-8") as f:
             json.dump({"フシギダネ": "Bulbasaur"}, f)
         result = get_poke_table()
-        self.assertNotIn("ミュウ", [v["name"] for v in result.values()])
+        self.assertNotIn("ミュコ", [v["name"] for v in result.values()])
 
     def test_ut_004_get_poke_table_exists_in_jp_to_en(self):
         Pokemon.objects.create(
@@ -110,9 +141,9 @@ class UtilsTests(TestCase):
         with open("pokemon_jp_to_en.json", "w", encoding="utf-8") as f:
             json.dump({"フシギダネ": "Bulbasaur"}, f)
         result = get_poke_table()
-        self.assertIn("Bulbasaur", result)
-        self.assertEqual(result["Bulbasaur"]["number"], "No.0001")
-        self.assertEqual(result["Bulbasaur"]["name"], "フシギダネ")
+        self.assertIn("bulbasaur", result)
+        self.assertEqual(result["bulbasaur"]["number"], "No.0001")
+        self.assertEqual(result["bulbasaur"]["name"], "フシギダネ")
 
     def test_ut_005_get_answers_vector_all_unanswered(self):
         class DummyRequest:
@@ -191,3 +222,12 @@ class UtilsTests(TestCase):
         answers_vector = [-1, -1]
         idx = select_next_question_ai(answers_vector, ai_data)
         self.assertIn(idx, [0, 1])
+        
+    @classmethod
+    def tearDownClass(cls):
+        # バックアップ復元
+        for fname in ['question_list.pkl', 'pokemon_list.pkl', 'candidate_features.pkl', 'pokemon_jp_to_en.json',"question_selector_model.keras"]:
+            bak = fname + '.bak'
+            if os.path.exists(bak):
+                shutil.move(bak, fname)
+        super().tearDownClass()

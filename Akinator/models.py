@@ -22,6 +22,7 @@ class Pokemon(models.Model):
     class Meta:
         db_table = "pokemons"
         app_label = 'Akinator'
+        managed = False
     
     def to_dict(self):
         return {

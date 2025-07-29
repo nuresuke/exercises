@@ -52,6 +52,7 @@ def get_poke_table():
 def get_answers_vector(request, questions):
     user_answers = request.session.get("user_answers", {})
     answers_vector = []
+    #print(questions)
     for q in questions:
         qid = q.get("id")
         answer = user_answers.get(str(qid))
@@ -61,7 +62,7 @@ def get_answers_vector(request, questions):
             answers_vector.append(-1)
         else:
             answers_vector.append(answer)
-    print("answers_vector:", answers_vector)
+    #print("answers_vector:", answers_vector)
     return answers_vector
 
 def filter_candidates_by_ai_answers(answers_vector, ai_data):
@@ -85,9 +86,9 @@ def filter_candidates_by_ai_answers(answers_vector, ai_data):
                 break
         if is_valid:
             filtered_candidates.append(pokemon)
-    print(f"候補: {len(filtered_candidates)}/{len(pokemon_list)}")
-    print("\n".join(debug_info[:151]))
-    print(filtered_candidates)
+    #print(f"候補: {len(filtered_candidates)}/{len(pokemon_list)}")
+    #print("\n".join(debug_info[:151]))
+    #print(filtered_candidates)
     return filtered_candidates
 
 def select_humanlike_next_question(answers_vector, filtered_candidates, ai_data):
@@ -166,7 +167,7 @@ def question_view(request):
         count = request.session.get('not_correct_count', 0) + 1
         request.session['not_correct_count'] = count
 
-        if count < 1:
+        if count < 5:
             # 履歴リセットして最初の質問へ
             request.session["user_answers"] = {}
             request.session["answers_history"] = []
@@ -217,9 +218,16 @@ def question_view(request):
             request.session.modified = True
     answers_vector = get_answers_vector(request, questions)
     filtered_candidates = filter_candidates_by_ai_answers(answers_vector, ai_data)
-    print(f"候補数: {len(filtered_candidates)}")
-
-    # ★ ここを修正！AIだけでなくhumanlikeロジックも使う
+    #print(f"候補数: {len(filtered_candidates)}")
+    
+    
+    if -1 not in answers_vector:
+        return render(request, "interface/prediction.html", {
+            "candidates": filtered_candidates,
+            "message": "全ての質問に回答しました"
+    })
+        
+    # AIだけでなくhumanlikeロジックも使う
     next_q_index = select_humanlike_next_question(answers_vector, filtered_candidates, ai_data)
     if next_q_index is None:
         for i, ans in enumerate(answers_vector):
@@ -230,7 +238,7 @@ def question_view(request):
     if next_q_index is not None and 0 <= next_q_index < len(questions):
         next_question = questions[next_q_index]
     else:
-        return render(request, "interface/result.html", {
+        return render(request, "interface/prediction.html", {
             "candidates": filtered_candidates,
             "message": "全ての質問に回答しました"
         })
